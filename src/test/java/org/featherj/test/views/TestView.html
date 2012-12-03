@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Title</title>
+    <script type="text/javascript">
+        function testFunc() {
+            alert("testFunc alert");
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="fluid-row">
+            <%
+                for (int i = 0; i < 12; i++) {
+                    %>
+                    <div class="span1"> <%= (i + 1) %> </div>
+                    <%
+                }
+            %>
+        </div>
+    </div>
+    <div>
+        Escaped tag <\%
+        Escaped tag \%>
+    </div>
+</body>
+</html>
