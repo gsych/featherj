@@ -13,9 +13,9 @@ code-block =
 	(T_OPEN | T_ECHO) text T_CLOSE
 	
 text =
-	LINE (LT LINE)*
+	line (LT line)*
 	
-LINE =
+line =
 	DQUOTE
 	| SLASH
 	| (.)+ ~(T_OPEN | T_ECHO | LT)
