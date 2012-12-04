@@ -1,0 +1,29 @@
+template =
+	import-directive*
+	constructor-directive*
+	(code-block | text)*
+	
+import-directive =
+	T_OPEN IMPORT code-block T_CLOSE
+	
+constructor-directive =
+	T_OPEN CONSTRUCTOR code-block T_CLOSE
+	
+code-block =
+	(T_OPEN | T_ECHO) text T_CLOSE
+	
+text =
+	LINE (LT LINE)*
+	
+LINE =
+	DQUOTE
+	| SLASH
+	| (.)+ ~(T_OPEN | T_ECHO | LT)
+	
+	
+T_OPEN = '<%'
+IMPORT = 'import'
+CONSTRUCTOR = 'constructor'
+T_CLOSE = '%>'
+T_ECHO = '<%='
+SLASH = '\'
