@@ -13,13 +13,10 @@ code-block =
 	(T_OPEN | T_ECHO) text T_CLOSE
 	
 text =
-	line (LT line)*
+	line (LT line?)*
 	
 line =
-	DQUOTE
-	| SLASH
-	| (.)+ ~(T_OPEN | T_ECHO | LT)
-	
+	( DQUOTE | SLASH | TEXT_SPAN )+
 	
 T_OPEN = '<%'
 IMPORT = 'import'
@@ -27,3 +24,4 @@ CONSTRUCTOR = 'constructor'
 T_CLOSE = '%>'
 T_ECHO = '<%='
 SLASH = '\'
+TEXT_SPAN = (.)* ~(T_OPEN | T_ECHO | T_CLOSE | LT | DQUOTE | SLASH)
