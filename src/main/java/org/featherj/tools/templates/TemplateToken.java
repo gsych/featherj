@@ -8,7 +8,7 @@ public class TemplateToken {
         NewLine,
         DoubleQuote,
         Slash,
-        Import, Constructor, Echo, TextSpan, CodeRange
+        Import, Members, Echo, TextSpan, CodeRange
     }
 
     private TokenType tokenType;

@@ -11,7 +11,7 @@ public class TemplateLexer {
     }
 
     public boolean hasNext() {
-        return buffer.position() + 1 < buffer.limit();
+        return buffer.position() < buffer.limit();
     }
 
     public TemplateToken getNextToken() {
@@ -51,15 +51,16 @@ public class TemplateLexer {
     private TemplateToken.TokenType start() {
         ws();
 
-        char lookahead = peek();
-        switch (lookahead) {
+        if (!hasNext()) {
+            return TemplateToken.TokenType.TextSpan;
+        }
+
+        switch (peek()) {
             case '<':
                 read();
-                lookahead = peek();
-                if (lookahead == '%') {
+                if (hasNext() && peek() == '%') {
                     read();
-                    lookahead = peek();
-                    if (lookahead == '=') {
+                    if (hasNext() && peek() == '=') {
                         return TemplateToken.TokenType.Echo;
                     }
                     return TemplateToken.TokenType.TagOpen;
@@ -68,16 +69,17 @@ public class TemplateLexer {
 
             case '%':
                 read();
-                lookahead = peek();
-                if (lookahead == '>') {
+                if (hasNext() && peek() == '>') {
                     return TemplateToken.TokenType.TagClose;
                 }
                 break;
 
             case '\\':
+                read();
                 return TemplateToken.TokenType.Slash;
 
             case '"':
+                read();
                 return TemplateToken.TokenType.DoubleQuote;
 
             default:
@@ -88,20 +90,32 @@ public class TemplateLexer {
     }
 
     private void ws() {
-        char lookahead = peek();
-        while (hasNext() && (Character.isWhitespace(lookahead) || lookahead == '\r')) {
-            read();
-            lookahead = peek();
+        if (hasNext()) {
+            char lookahead = peek();
+            while ((Character.isWhitespace(lookahead) || lookahead == '\r')) {
+                read();
+                if (!hasNext()) {
+                    break;
+                }
+                lookahead = peek();
+            }
         }
     }
 
     private TemplateToken.TokenType rest() {
         ws();
 
+        if (!hasNext()) {
+            return TemplateToken.TokenType.TextSpan;
+        }
+
         char lookahead = peek();
         String id = "";
         while (Character.isAlphabetic(lookahead)) {
             id += read();
+            if (!hasNext()) {
+                break;
+            }
             lookahead = peek();
         }
 
@@ -109,11 +123,14 @@ public class TemplateLexer {
             if (id.equals("import")) {
                 return TemplateToken.TokenType.Import;
             }
-            if (id.equals("constructor")) {
-                return TemplateToken.TokenType.Constructor;
+            if (id.equals("members")) {
+                return TemplateToken.TokenType.Members;
             }
         }
 
+        if (!hasNext()) {
+            return TemplateToken.TokenType.TextSpan;
+        }
         lookahead = peek();
         while (
             lookahead != '<' &&
@@ -123,13 +140,12 @@ public class TemplateLexer {
             lookahead != '\n'
         ) {
             read();
+            if (!hasNext()) {
+                break;
+            }
             lookahead = peek();
         }
 
         return TemplateToken.TokenType.TextSpan;
-    }
-
-    private boolean equal(CharBuffer b1, CharBuffer b2) {
-        return b1.compareTo(b2) == 0;
     }
 }
