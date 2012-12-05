@@ -17,6 +17,8 @@ public class TemplateToken {
 
     public TemplateToken(TokenType tokenType, int start, int end) {
         this.tokenType = tokenType;
+        this.start = start;
+        this.end = end;
     }
 
     public TokenType getTokenType() {

@@ -59,6 +59,10 @@ public class TemplateParser {
     private TemplateLexer lexer;
 
     public TemplateParser(CharBuffer buffer, String packageName, String className) {
+        if (packageName != null && packageName.charAt(packageName.length() - 1) != '.') {
+            packageName += '.';
+        }
+
         this.buffer = buffer;
         this.packageName = packageName;
         this.className = className;
@@ -79,11 +83,11 @@ public class TemplateParser {
     private void renderClassStart() {
         codeBuilder.appendLine();
         codeBuilder.appendLine("public class " + className + " implements View {");
-        codeBuilder.appendLine();
         codeBuilder.indent();
     }
 
     private void renderRenderMethodStart() {
+        codeBuilder.appendLine();
         codeBuilder.appendLine("public String render() {");
         codeBuilder.indent();
         codeBuilder.appendLine("String newLine = System.getProperty(\"line.separator\");");
@@ -123,12 +127,14 @@ public class TemplateParser {
     }
 
     private void importDirectives() throws TemplateEngineParseException {
-        TemplateToken lookahead1 = lexer.lookahead();
-        if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen) {
-            TemplateToken lookahead2 = lexer.lookahead(2);
-            if (lookahead2.getTokenType() == TemplateToken.TokenType.Import) {
-                importDirective();
-                importDirectives();
+        if (lexer.hasNext()) {
+            TemplateToken lookahead1 = lexer.lookahead();
+            if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen) {
+                TemplateToken lookahead2 = lexer.lookahead(2);
+                if (lookahead2.getTokenType() == TemplateToken.TokenType.Import) {
+                    importDirective();
+                    importDirectives();
+                }
             }
         }
     }
@@ -144,12 +150,14 @@ public class TemplateParser {
     }
 
     private void membersDirectives() throws TemplateEngineParseException {
-        TemplateToken lookahead1 = lexer.lookahead();
-        if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen) {
-            TemplateToken lookahead2 = lexer.lookahead(2);
-            if (lookahead2.getTokenType() == TemplateToken.TokenType.Members) {
-                membersDirective();
-                membersDirectives();
+        if (lexer.hasNext()) {
+            TemplateToken lookahead1 = lexer.lookahead();
+            if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen) {
+                TemplateToken lookahead2 = lexer.lookahead(2);
+                if (lookahead2.getTokenType() == TemplateToken.TokenType.Members) {
+                    membersDirective();
+                    membersDirectives();
+                }
             }
         }
     }
@@ -177,16 +185,19 @@ public class TemplateParser {
     }
 
     private void codeBlock() throws TemplateEngineParseException {
-        TemplateToken lookahead = lexer.lookahead();
-        if (lookahead.getTokenType() == TemplateToken.TokenType.Echo) {
-            echo();
-        }
-        else if (lookahead.getTokenType() == TemplateToken.TokenType.TagOpen) {
-            match(TemplateToken.TokenType.TagOpen);
-            javaCodeMode = true;
-            text();
-            javaCodeMode = false;
-            match(TemplateToken.TokenType.TagClose);
+        if (lexer.hasNext()) {
+            TemplateToken lookahead = lexer.lookahead();
+            if (lookahead.getTokenType() == TemplateToken.TokenType.Echo) {
+                echo();
+                return;
+            }
+            else if (lookahead.getTokenType() == TemplateToken.TokenType.TagOpen) {
+                match(TemplateToken.TokenType.TagOpen);
+                javaCodeMode = true;
+                text();
+                javaCodeMode = false;
+                match(TemplateToken.TokenType.TagClose);
+            }
         }
         throw new TemplateEngineParseException(
                 TemplateToken.TokenType.TagOpen + " or " + TemplateToken.TokenType.Echo + " expected.");
@@ -210,6 +221,7 @@ public class TemplateParser {
         line();
         while (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.NewLine) {
             match(TemplateToken.TokenType.NewLine);
+            codeBuilder.appendLine();
             line();
         }
     }
@@ -258,6 +270,8 @@ public class TemplateParser {
     private void textSpan() throws TemplateEngineParseException {
         TemplateToken token = match(TemplateToken.TokenType.TextSpan);
         codeBuilder.appendToken(token);
-        codeBuilder.appendLine();
+        if (!javaCodeMode) {
+            codeBuilder.appendLine();
+        }
     }
 }

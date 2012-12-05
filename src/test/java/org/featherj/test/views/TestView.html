@@ -1,5 +1,13 @@
-<%import org.featherj.test.models.TestObj; %>
-<%constructor TestView(String param1, TestObj param2) %>
+<% import org.featherj.test.models.TestObj; %>
+<% members
+    private String param1;
+    private TestObj param2;
+
+    public TestView(String param1, TestObj param2) {
+        this.param1 = param1;
+        this.param2 = param2;
+    }
+%>
 
 <!DOCTYPE html>
 <html>
@@ -15,17 +23,17 @@
     <div class="container">
         <div class="fluid-row">
             <%
-                for (int i = 0; i < 12; i++) {
-                    %>
-                    <div class="span1"> <%= (i + 1) %> </div>
-                    <%
-                }
+            for (int i = 0; i < 12; i++) {
+                %>
+                <div class="span1"> <%= (i + 1) %> </div>
+                <%
+            }
             %>
         </div>
     </div>
     <div>
         Escaped tag <\%
-        Escaped tag \%>
+        Escaped tag \% >
     </div>
 </body>
 </html>

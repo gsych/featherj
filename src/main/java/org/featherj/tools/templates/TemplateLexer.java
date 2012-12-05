@@ -61,6 +61,7 @@ public class TemplateLexer {
                 if (hasNext() && peek() == '%') {
                     read();
                     if (hasNext() && peek() == '=') {
+                        read();
                         return TemplateToken.TokenType.Echo;
                     }
                     return TemplateToken.TokenType.TagOpen;
@@ -70,6 +71,7 @@ public class TemplateLexer {
             case '%':
                 read();
                 if (hasNext() && peek() == '>') {
+                    read();
                     return TemplateToken.TokenType.TagClose;
                 }
                 break;

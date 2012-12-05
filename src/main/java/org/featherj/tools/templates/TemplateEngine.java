@@ -34,8 +34,8 @@ public class TemplateEngine {
 
         String packageName = basePackage + s.replace(File.separatorChar, '.');
 
-        TemplateParser parser = new TemplateParser(buffer);
-        return parser.parse(packageName, FilenameUtils.removeExtension(templateFile.getName()));
+        TemplateParser parser = new TemplateParser(buffer, packageName, FilenameUtils.removeExtension(templateFile.getName()));
+        return parser.parse();
     }
 
     private static CharBuffer readFile(File templateFile) throws IOException {
