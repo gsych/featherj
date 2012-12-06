@@ -4,7 +4,7 @@ public class TemplateEngineParseException extends Exception {
     public TemplateEngineParseException() {
     }
 
-    public TemplateEngineParseException(String message) {
-        super(message);
+    public TemplateEngineParseException(TemplateLexer lexer, String message) {
+        super("Line: " + lexer.getLine() + ", col: " + lexer.getCol() + " " + message);
     }
 }

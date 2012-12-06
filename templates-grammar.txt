@@ -3,18 +3,18 @@ template =
 	extends-directive?
 	members-directive*
 	(code-block | text)*
-
-extends-directive =
-	T_OPEN EXTENDS text T_CLOSE
 	
 import-directive =
-	T_OPEN IMPORT text T_CLOSE
+	T_OPEN IMPORT text T_CLOSE LT*
+
+extends-directive =
+	T_OPEN EXTENDS text T_CLOSE LT*
 
 members-directive =
-	T_OPEN MEMBERS text T_CLOSE
+	T_OPEN MEMBERS text T_CLOSE LT*
 
 code-block =
-	(T_OPEN | T_ECHO) text T_CLOSE
+	(T_OPEN | T_ECHO) text T_CLOSE LT*
 
 text =
 	line (LT line?)*

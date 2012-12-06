@@ -6,7 +6,7 @@ import org.junit.Test;
 public class TestViewGenerator {
 
     @Test
-    public void thisAlwaysPasses() throws Exception {
+    public void testViewGeneration() throws Exception {
         GenerateViews gen = new GenerateViews();
         gen.generate("src\\test\\java", "org\\featherj\\test\\views");
     }

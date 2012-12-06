@@ -5,9 +5,19 @@ import java.nio.CharBuffer;
 public class TemplateLexer {
 
     private CharBuffer buffer;
+    private int line = 0;
+    private int col = 0;
 
     public TemplateLexer(CharBuffer buffer) {
         this.buffer = buffer;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public int getCol() {
+        return col;
     }
 
     public boolean hasNext() {
@@ -31,11 +41,15 @@ public class TemplateLexer {
     }
 
     public TemplateToken lookahead(int num) throws TemplateEngineParseException {
+        int line = this.line;
+        int col = this.col;
         int pos = buffer.position();
         TemplateToken token = null;
         for (int i = 0; i < num && hasNext(); i++) {
             token = getNextToken();
         }
+        this.line = line;
+        this.col = col;
         buffer.position(pos);
         return token;
     }
@@ -49,6 +63,7 @@ public class TemplateLexer {
     }
 
     private char read() {
+        col++;
         return buffer.get();
     }
 
@@ -56,7 +71,7 @@ public class TemplateLexer {
         ws();
 
         if (!hasNext()) {
-            throw new TemplateEngineParseException("Reached end of the input buffer.");
+            throw new TemplateEngineParseException(this, "Reached end of the input buffer.");
         }
 
         switch (peek()) {
@@ -80,13 +95,11 @@ public class TemplateLexer {
                 }
                 break;
 
-            case '\\':
+            case '\n':
+                line++;
+                col = 0;
                 read();
-                return TemplateToken.TokenType.Slash;
-
-            case '"':
-                read();
-                return TemplateToken.TokenType.DoubleQuote;
+                return TemplateToken.TokenType.NewLine;
 
             default:
                 break;
@@ -98,7 +111,7 @@ public class TemplateLexer {
     private void ws() {
         if (hasNext()) {
             char lookahead = peek();
-            while ((Character.isWhitespace(lookahead) || lookahead == '\r')) {
+            while (lookahead != '\n' && (Character.isWhitespace(lookahead) || lookahead == '\r')) {
                 read();
                 if (!hasNext()) {
                     break;
@@ -144,8 +157,6 @@ public class TemplateLexer {
         while (
             lookahead != '<' &&
             lookahead != '%' &&
-            lookahead != '"' &&
-            lookahead != '\\' &&
             lookahead != '\n'
         ) {
             read();

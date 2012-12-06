@@ -5,8 +5,6 @@ public class TemplateToken {
         TagOpen,
         TagClose,
         NewLine,
-        DoubleQuote,
-        Slash,
         Import,
         Extends,
         Members,
@@ -34,5 +32,10 @@ public class TemplateToken {
 
     public int getEnd() {
         return end;
+    }
+
+    @Override
+    public String toString() {
+        return getStart() + ":" + getEnd() + ", " + getTokenType();
     }
 }

@@ -44,7 +44,20 @@ public class TemplateParser {
 
         public CodeBuilder appendToken(TemplateToken token) {
             for (int i = token.getStart(); i < token.getEnd(); i++) {
-                append(buffer.get(i));
+                char ch = buffer.get(i);
+                switch (ch) {
+                    case '\r':
+                        break;
+                    case '"':
+                        append(javaCodeMode ? "\"" : "\\\"");
+                        break;
+                    case '\\':
+                        append(javaCodeMode ? "\\" : "\\\\");
+                        break;
+                    default:
+                        append(ch);
+                        break;
+                }
             }
             return this;
         }
@@ -149,7 +162,7 @@ public class TemplateParser {
     private TemplateToken match(TemplateToken.TokenType tokenType) throws TemplateEngineParseException {
         TemplateToken token = lexer.getNextToken();
         if (token == null || token.getTokenType() != tokenType) {
-            throw new TemplateEngineParseException(tokenType + " expected.");
+            throw new TemplateEngineParseException(lexer, tokenType + " expected.");
         }
 
         return token;
@@ -164,6 +177,12 @@ public class TemplateParser {
         renderRenderMethodStart();
         body();
         renderRenderMethodAndClassEnd();
+    }
+
+    private void lts() throws TemplateEngineParseException {
+        while (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.NewLine) {
+            match(TemplateToken.TokenType.NewLine);
+        }
     }
 
     private void extendsDirective() throws TemplateEngineParseException {
@@ -193,6 +212,7 @@ public class TemplateParser {
     }
 
     private void importDirectives() throws TemplateEngineParseException {
+        lts();
         if (lexer.hasNext()) {
             TemplateToken lookahead1 = lexer.lookahead();
             if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen && lexer.hasNext(1)) {
@@ -219,6 +239,7 @@ public class TemplateParser {
     }
 
     private void membersDirectives() throws TemplateEngineParseException {
+        lts();
         if (lexer.hasNext()) {
             TemplateToken lookahead1 = lexer.lookahead();
             if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen  && lexer.hasNext(1)) {
@@ -266,9 +287,10 @@ public class TemplateParser {
                 text();
                 javaCodeMode = false;
                 match(TemplateToken.TokenType.TagClose);
+                return;
             }
         }
-        throw new TemplateEngineParseException(
+        throw new TemplateEngineParseException(lexer,
                 TemplateToken.TokenType.TagOpen + " or " + TemplateToken.TokenType.Echo + " expected.");
     }
 
@@ -281,7 +303,7 @@ public class TemplateParser {
         text();
         javaCodeMode = false;
 
-        activeCodeBuilder.appendLine(" );");
+        activeCodeBuilder.append(") );");
 
         match(TemplateToken.TokenType.TagClose);
     }
@@ -290,58 +312,26 @@ public class TemplateParser {
         line();
         while (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.NewLine) {
             match(TemplateToken.TokenType.NewLine);
-            activeCodeBuilder.appendLine();
+            activeCodeBuilder.appendLine(javaCodeMode ? "" : "view.append(newLine);");
             line();
         }
     }
 
 
     private void line() throws TemplateEngineParseException {
-        TemplateToken lookahead = lexer.lookahead();
-        while (
-            lexer.hasNext() && (
-                lookahead.getTokenType() == TemplateToken.TokenType.DoubleQuote ||
-                lookahead.getTokenType() == TemplateToken.TokenType.Slash ||
-                lookahead.getTokenType() == TemplateToken.TokenType.TextSpan
-            )) {
-            if (lookahead.getTokenType() == TemplateToken.TokenType.DoubleQuote) {
-                doubleQuote();
-            }
-            else if (lookahead.getTokenType() == TemplateToken.TokenType.Slash) {
-                slash();
-            }
-            else {
-                textSpan();
-            }
-            lookahead = lexer.lookahead();
-        }
-    }
-
-    private void doubleQuote() throws TemplateEngineParseException {
-        match(TemplateToken.TokenType.DoubleQuote);
-        if (!javaCodeMode) {
-            activeCodeBuilder.append("\\\"");
-        }
-        else {
-            activeCodeBuilder.append('"');
-        }
-    }
-
-    private void slash() throws TemplateEngineParseException {
-        match(TemplateToken.TokenType.Slash);
-        if (!javaCodeMode) {
-            activeCodeBuilder.append("\\\\");
-        }
-        else {
-            activeCodeBuilder.append('\\');
+        while (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.TextSpan) {
+            textSpan();
         }
     }
 
     private void textSpan() throws TemplateEngineParseException {
         TemplateToken token = match(TemplateToken.TokenType.TextSpan);
+        if (!javaCodeMode) {
+            activeCodeBuilder.append("view.append(\"");
+        }
         activeCodeBuilder.appendToken(token);
         if (!javaCodeMode) {
-            activeCodeBuilder.appendLine();
+            activeCodeBuilder.append("\");");
         }
     }
 }
