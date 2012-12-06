@@ -33,6 +33,10 @@ public class TemplateEngine {
         String s = absPath.substring(index, absPath.length() - templateFile.getName().length());
 
         String packageName = basePackage + s.replace(File.separatorChar, '.');
+        if (packageName != null && packageName.charAt(packageName.length() - 1) != '.') {
+            packageName += '.';
+        }
+        packageName += "gen";
 
         TemplateParser parser = new TemplateParser(buffer, packageName, FilenameUtils.removeExtension(templateFile.getName()));
         return parser.parse();

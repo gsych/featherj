@@ -6,48 +6,68 @@ public class TemplateParser {
 
     private class CodeBuilder {
         private static final String INDENT = "    ";
-        private StringBuilder renderedTemplate;
+        private StringBuilder sb;
         private String indent = "";
 
+        public CodeBuilder() {
+            sb = new StringBuilder();
+        }
+
         public CodeBuilder(int capacity) {
-            renderedTemplate = new StringBuilder(capacity);
+            sb = new StringBuilder(capacity);
         }
 
-        public void append(String s) {
-            renderedTemplate.append(s);
+        public CodeBuilder append(String s) {
+            sb.append(s);
+            return this;
         }
 
-        public void append(char c) {
-            renderedTemplate.append(c);
+        public CodeBuilder append(char c) {
+            sb.append(c);
+            return this;
         }
 
-        public void appendLine(String s) {
-            append(s + "\n" + indent);
+        public CodeBuilder append(CodeBuilder builder) {
+            sb.append(builder.sb);
+            return this;
         }
 
-        public void appendLine() {
+        public CodeBuilder appendLine() {
             appendLine("");
+            return this;
         }
 
-        public void indent() {
-            indent += INDENT;
-            append(INDENT);
+        public CodeBuilder appendLine(String s) {
+            append(s + "\n" + indent);
+            return this;
         }
 
-        public void outdent() {
-            indent = indent.substring(INDENT.length());
-            renderedTemplate.delete(renderedTemplate.length() - 4, renderedTemplate.length());
-        }
-
-        public void appendToken(TemplateToken token) {
+        public CodeBuilder appendToken(TemplateToken token) {
             for (int i = token.getStart(); i < token.getEnd(); i++) {
                 append(buffer.get(i));
             }
+            return this;
+        }
+
+        public int length() {
+            return sb.length();
+        }
+
+        public CodeBuilder indent() {
+            indent += INDENT;
+            append(INDENT);
+            return this;
+        }
+
+        public CodeBuilder outdent() {
+            indent = indent.substring(INDENT.length());
+            sb.delete(sb.length() - 4, sb.length());
+            return this;
         }
 
         @Override
         public String toString() {
-            return renderedTemplate.toString();
+            return sb.toString();
         }
     }
 
@@ -55,52 +75,69 @@ public class TemplateParser {
     private CharBuffer buffer;
     private final String packageName;
     private final String className;
-    private CodeBuilder codeBuilder;
+    private CodeBuilder activeCodeBuilder;
+    private CodeBuilder extendsClauseBuilder;
+    private CodeBuilder classCodeBuilder;
     private TemplateLexer lexer;
 
     public TemplateParser(CharBuffer buffer, String packageName, String className) {
-        if (packageName != null && packageName.charAt(packageName.length() - 1) != '.') {
-            packageName += '.';
-        }
-
         this.buffer = buffer;
         this.packageName = packageName;
         this.className = className;
-        codeBuilder = new CodeBuilder(buffer.capacity());
+        classCodeBuilder = new CodeBuilder(buffer.capacity());
         lexer = new TemplateLexer(buffer);
     }
 
     public String parse() throws TemplateEngineParseException {
-        codeBuilder.appendLine("package " + packageName + "gen;");
-        codeBuilder.appendLine();
-        codeBuilder.appendLine("import org.featherj.View;");
+        outputTo(classCodeBuilder);
+
+        activeCodeBuilder.append("package ").append(packageName).appendLine(";");
+        activeCodeBuilder.appendLine();
+        activeCodeBuilder.appendLine("import org.featherj.View;");
 
         start();
 
-        return codeBuilder.toString();
+        return activeCodeBuilder.toString();
+    }
+
+    private void outputTo(CodeBuilder builder) {
+        activeCodeBuilder = builder;
     }
 
     private void renderClassStart() {
-        codeBuilder.appendLine();
-        codeBuilder.appendLine("public class " + className + " implements View {");
-        codeBuilder.indent();
+        activeCodeBuilder.appendLine();
+        activeCodeBuilder.append("public class ").append(className).append(" ");
+        if (extendsClauseBuilder != null && extendsClauseBuilder.length() > 0) {
+            activeCodeBuilder.append(extendsClauseBuilder);
+        }
+        else {
+            activeCodeBuilder.append("implements View");
+        }
+        activeCodeBuilder.appendLine(" {");
+        activeCodeBuilder.indent();
     }
 
     private void renderRenderMethodStart() {
-        codeBuilder.appendLine();
-        codeBuilder.appendLine("public String render() {");
-        codeBuilder.indent();
-        codeBuilder.appendLine("String newLine = System.getProperty(\"line.separator\");");
-        codeBuilder.appendLine("StringBuilder view = new StringBuilder();");
+        activeCodeBuilder.appendLine();
+
+        activeCodeBuilder.appendLine("@Override");
+        activeCodeBuilder.appendLine("public String renderInherited() {");
+        activeCodeBuilder.appendLine("}");
+        activeCodeBuilder.appendLine();
+
+        activeCodeBuilder.appendLine("public String render() {");
+        activeCodeBuilder.indent();
+        activeCodeBuilder.appendLine("String newLine = System.getProperty(\"line.separator\");");
+        activeCodeBuilder.appendLine("StringBuilder view = new StringBuilder();");
     }
 
     private void renderRenderMethodAndClassEnd() {
-        codeBuilder.appendLine();
-        codeBuilder.appendLine("return view.toString();");
-        codeBuilder.outdent();
-        codeBuilder.appendLine("}");
-        codeBuilder.outdent();
-        codeBuilder.append("}");
+        activeCodeBuilder.appendLine();
+        activeCodeBuilder.appendLine("return view.toString();");
+        activeCodeBuilder.outdent();
+        activeCodeBuilder.appendLine("}");
+        activeCodeBuilder.outdent();
+        activeCodeBuilder.append("}");
     }
 
     private TemplateToken match(TemplateToken.TokenType tokenType) throws TemplateEngineParseException {
@@ -114,22 +151,44 @@ public class TemplateParser {
 
     private void start() throws TemplateEngineParseException {
         importDirectives();
-
+        extendsDirective();
         renderClassStart();
-
         membersDirectives();
-
         renderRenderMethodStart();
-
         body();
-
         renderRenderMethodAndClassEnd();
+    }
+
+    private void extendsDirective() throws TemplateEngineParseException {
+        if (!lexer.hasNext()) {
+            return;
+        }
+        TemplateToken lookahead1 = lexer.lookahead();
+        if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen && lexer.hasNext(1)) {
+            TemplateToken lookahead2 = lexer.lookahead(2);
+            if (lookahead2.getTokenType() == TemplateToken.TokenType.Extends) {
+                match(TemplateToken.TokenType.TagOpen);
+                match(TemplateToken.TokenType.Extends);
+
+                extendsClauseBuilder = new CodeBuilder();
+                outputTo(extendsClauseBuilder);
+
+                javaCodeMode = true;
+                activeCodeBuilder.append("extends");
+                text();
+                javaCodeMode = false;
+
+                outputTo(classCodeBuilder);
+
+                match(TemplateToken.TokenType.TagClose);
+            }
+        }
     }
 
     private void importDirectives() throws TemplateEngineParseException {
         if (lexer.hasNext()) {
             TemplateToken lookahead1 = lexer.lookahead();
-            if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen) {
+            if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen && lexer.hasNext(1)) {
                 TemplateToken lookahead2 = lexer.lookahead(2);
                 if (lookahead2.getTokenType() == TemplateToken.TokenType.Import) {
                     importDirective();
@@ -143,16 +202,19 @@ public class TemplateParser {
         match(TemplateToken.TokenType.TagOpen);
         match(TemplateToken.TokenType.Import);
 
-        codeBuilder.append("import");
+        activeCodeBuilder.append("import");
 
+        javaCodeMode = true;
         text();
+        javaCodeMode = false;
+
         match(TemplateToken.TokenType.TagClose);
     }
 
     private void membersDirectives() throws TemplateEngineParseException {
         if (lexer.hasNext()) {
             TemplateToken lookahead1 = lexer.lookahead();
-            if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen) {
+            if (lookahead1.getTokenType() == TemplateToken.TokenType.TagOpen  && lexer.hasNext(1)) {
                 TemplateToken lookahead2 = lexer.lookahead(2);
                 if (lookahead2.getTokenType() == TemplateToken.TokenType.Members) {
                     membersDirective();
@@ -206,13 +268,13 @@ public class TemplateParser {
     private void echo() throws TemplateEngineParseException {
         match(TemplateToken.TokenType.Echo);
 
-        codeBuilder.append("view.append(String.valueOf( ");
+        activeCodeBuilder.append("view.append(String.valueOf( ");
 
         javaCodeMode = true;
         text();
         javaCodeMode = false;
 
-        codeBuilder.appendLine(" );");
+        activeCodeBuilder.appendLine(" );");
 
         match(TemplateToken.TokenType.TagClose);
     }
@@ -221,10 +283,11 @@ public class TemplateParser {
         line();
         while (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.NewLine) {
             match(TemplateToken.TokenType.NewLine);
-            codeBuilder.appendLine();
+            activeCodeBuilder.appendLine();
             line();
         }
     }
+
 
     private void line() throws TemplateEngineParseException {
         TemplateToken lookahead = lexer.lookahead();
@@ -250,28 +313,28 @@ public class TemplateParser {
     private void doubleQuote() throws TemplateEngineParseException {
         match(TemplateToken.TokenType.DoubleQuote);
         if (!javaCodeMode) {
-            codeBuilder.append("\\\"");
+            activeCodeBuilder.append("\\\"");
         }
         else {
-            codeBuilder.append('"');
+            activeCodeBuilder.append('"');
         }
     }
 
     private void slash() throws TemplateEngineParseException {
         match(TemplateToken.TokenType.Slash);
         if (!javaCodeMode) {
-            codeBuilder.append("\\\\");
+            activeCodeBuilder.append("\\\\");
         }
         else {
-            codeBuilder.append('\\');
+            activeCodeBuilder.append('\\');
         }
     }
 
     private void textSpan() throws TemplateEngineParseException {
         TemplateToken token = match(TemplateToken.TokenType.TextSpan);
-        codeBuilder.appendToken(token);
+        activeCodeBuilder.appendToken(token);
         if (!javaCodeMode) {
-            codeBuilder.appendLine();
+            activeCodeBuilder.appendLine();
         }
     }
 }

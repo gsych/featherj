@@ -1,8 +1,12 @@
 template =
 	import-directive*
+	extends-directive?
 	members-directive*
 	(code-block | text)*
 
+extends-directive =
+	T_OPEN EXTENDS text T_CLOSE
+	
 import-directive =
 	T_OPEN IMPORT text T_CLOSE
 
@@ -23,6 +27,7 @@ T_ECHO = '<%='
 T_CLOSE = '%>'
 DQUOTE = '"'
 SLASH = '\'
+EXTENDS = 'extends'
 IMPORT = 'import'
 MEMBERS = 'members'
 TEXT_SPAN = (.)* ~(T_OPEN | T_ECHO | T_CLOSE | LT | DQUOTE | SLASH)

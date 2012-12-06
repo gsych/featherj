@@ -2,13 +2,16 @@ package org.featherj.tools.templates;
 
 public class TemplateToken {
     public enum TokenType {
-        DirectiveOpen,
         TagOpen,
         TagClose,
         NewLine,
         DoubleQuote,
         Slash,
-        Import, Members, Echo, TextSpan, CodeRange
+        Import,
+        Extends,
+        Members,
+        Echo,
+        TextSpan
     }
 
     private TokenType tokenType;

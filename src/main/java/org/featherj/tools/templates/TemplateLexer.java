@@ -11,10 +11,14 @@ public class TemplateLexer {
     }
 
     public boolean hasNext() {
-        return buffer.position() < buffer.limit();
+        return hasNext(0);
     }
 
-    public TemplateToken getNextToken() {
+    public boolean hasNext(int i) {
+        return buffer.position() + i < buffer.limit();
+    }
+
+    public TemplateToken getNextToken() throws TemplateEngineParseException {
         int start = buffer.position();
         TemplateToken.TokenType type = start();
         int end = buffer.position();
@@ -22,11 +26,11 @@ public class TemplateLexer {
         return new TemplateToken(type, start, end);
     }
 
-    public TemplateToken lookahead() {
+    public TemplateToken lookahead() throws TemplateEngineParseException {
         return lookahead(1);
     }
 
-    public TemplateToken lookahead(int num) {
+    public TemplateToken lookahead(int num) throws TemplateEngineParseException {
         int pos = buffer.position();
         TemplateToken token = null;
         for (int i = 0; i < num && hasNext(); i++) {
@@ -48,11 +52,11 @@ public class TemplateLexer {
         return buffer.get();
     }
 
-    private TemplateToken.TokenType start() {
+    private TemplateToken.TokenType start() throws TemplateEngineParseException {
         ws();
 
         if (!hasNext()) {
-            return TemplateToken.TokenType.TextSpan;
+            throw new TemplateEngineParseException("Reached end of the input buffer.");
         }
 
         switch (peek()) {
@@ -124,6 +128,9 @@ public class TemplateLexer {
         if (id.length() > 0) {
             if (id.equals("import")) {
                 return TemplateToken.TokenType.Import;
+            }
+            if (id.equals("extends")) {
+                return TemplateToken.TokenType.Extends;
             }
             if (id.equals("members")) {
                 return TemplateToken.TokenType.Members;
