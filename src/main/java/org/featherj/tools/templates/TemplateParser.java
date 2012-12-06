@@ -117,12 +117,18 @@ public class TemplateParser {
         activeCodeBuilder.indent();
     }
 
-    private void renderRenderMethodStart() {
+    private void renderRenderInheritedMethod() {
         activeCodeBuilder.appendLine();
 
         activeCodeBuilder.appendLine("@Override");
         activeCodeBuilder.appendLine("public String renderInherited() {");
+        activeCodeBuilder.indent();
+        activeCodeBuilder.appendLine("return \"\";");
+        activeCodeBuilder.outdent();
         activeCodeBuilder.appendLine("}");
+    }
+
+    private void renderRenderMethodStart() {
         activeCodeBuilder.appendLine();
 
         activeCodeBuilder.appendLine("public String render() {");
@@ -154,6 +160,7 @@ public class TemplateParser {
         extendsDirective();
         renderClassStart();
         membersDirectives();
+        renderRenderInheritedMethod();
         renderRenderMethodStart();
         body();
         renderRenderMethodAndClassEnd();

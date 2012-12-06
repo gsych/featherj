@@ -4,6 +4,10 @@ import org.featherj.View;
 
 public class TestView implements View {
 
+    public String renderInherited() {
+        return "";
+    }
+
     public String render() {
         String newLine = System.getProperty("line.separator");
         StringBuilder view = new StringBuilder();
@@ -21,17 +25,17 @@ public class TestView implements View {
         view.append("    <div class=\"container\">").append(newLine);
         view.append("        <div class=\"fluid-row\">").append(newLine);
         view.append("            ").append(newLine);
-        
+
                         for (int i = 0; i < 12; i++) {
-                            
+
         view.append("").append(newLine);
         view.append("                    <div class=\"span1\"> ").append(newLine);
         view.append((  (i + 1) ) ).append(newLine);
         view.append(" </div>").append(newLine);
         view.append("                    ").append(newLine);
-        
+
                         }
-                    
+
         view.append("").append(newLine);
         view.append("        </div>").append(newLine);
         view.append("    </div>").append(newLine);
@@ -40,7 +44,7 @@ public class TestView implements View {
         view.append("        Escaped tag \\%>").append(newLine);
         view.append("    </div>").append(newLine);
         view.append("</body>").append(newLine);
-        
+
         return view.toString();
     }
 }

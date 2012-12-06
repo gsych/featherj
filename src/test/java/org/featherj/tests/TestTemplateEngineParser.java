@@ -15,13 +15,18 @@ public class TestTemplateEngineParser {
         TemplateParser parser = new TemplateParser(buffer, "org.test", "TestClassName");
 
         String classCode = parser.parse();
-        //System.out.print(classCode);
+//        System.out.print(classCode);
         Assert.assertEquals(
                 "package org.test;\n" +
                 "\n" +
                 "import org.featherj.View;\n" +
                 "import org.featherj.test; \n" +
                 "public class TestClassName implements View {\n" +
+                "    \n" +
+                "    @Override\n" +
+                "    public String renderInherited() {\n" +
+                "        return \"\";\n" +
+                "    }\n" +
                 "    \n" +
                 "    public String render() {\n" +
                 "        String newLine = System.getProperty(\"line.separator\");\n" +
@@ -64,6 +69,11 @@ public class TestTemplateEngineParser {
                 "        this.var = var;\n" +
                 "        this.param = param;\n" +
                 "    }\n" +
+                "    @Override\n" +
+                "    public String renderInherited() {\n" +
+                "        return \"\";\n" +
+                "    }\n" +
+                "    \n" +
                 "    public String render() {\n" +
                 "        String newLine = System.getProperty(\"line.separator\");\n" +
                 "        StringBuilder view = new StringBuilder();\n" +
@@ -86,6 +96,11 @@ public class TestTemplateEngineParser {
                 "import org.featherj.View;\n" +
                 "\n" +
                 "public class TestClassName implements View {\n" +
+                "    \n" +
+                "    @Override\n" +
+                "    public String renderInherited() {\n" +
+                "        return \"\";\n" +
+                "    }\n" +
                 "    \n" +
                 "    public String render() {\n" +
                 "        String newLine = System.getProperty(\"line.separator\");\n" +
@@ -113,6 +128,11 @@ public class TestTemplateEngineParser {
                 "import org.featherj.View;\n" +
                 "import org.featherj.test.MyMasterView; \n" +
                 "public class TestClassName extends MyMasterView  {\n" +
+                "    \n" +
+                "    @Override\n" +
+                "    public String renderInherited() {\n" +
+                "        return \"\";\n" +
+                "    }\n" +
                 "    \n" +
                 "    public String render() {\n" +
                 "        String newLine = System.getProperty(\"line.separator\");\n" +
