@@ -1,4 +1,6 @@
-package org.featherj;
+package org.featherj.actions;
+
+import org.featherj.View;
 
 public interface ActionResult {
 

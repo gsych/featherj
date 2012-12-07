@@ -1,5 +1,7 @@
 package org.featherj;
 
+import org.featherj.actions.ActionResult;
+
 import javax.servlet.http.HttpServletResponse;
 
 public class Controller {

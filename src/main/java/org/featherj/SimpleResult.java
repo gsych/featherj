@@ -1,5 +1,7 @@
 package org.featherj;
 
+import org.featherj.actions.ActionResult;
+
 public class SimpleResult implements ActionResult {
 
     private int status;
