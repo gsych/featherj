@@ -8,15 +8,22 @@ public abstract class Param<T> {
     private final String key;
     private final Pattern expr;
 
-    protected Param(String key) {
-        this.key = key;
-        expr = null;
-    }
-
     public Param(String key, Pattern expr) {
         this.key = key;
         this.expr = expr;
     }
 
-    public abstract T extractValue(Request request);
+    public String getKey() {
+        return key;
+    }
+
+    public Pattern getExpr() {
+        return expr;
+    }
+
+    public abstract void extractValue(String value);
+
+    public abstract void clearValue();
+
+    public abstract T getValue();
 }
