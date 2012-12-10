@@ -61,14 +61,13 @@ public class TestTemplateEngineParser {
                 "import org.featherj.View;\n" +
                 "\n" +
                 "public class TestClassName implements View {\n" +
+                "        private int var;\n" +
+                "        private Object param;\n" +
+                "        public TestClassName(int var, Object param) {\n" +
+                "            this.var = var;\n" +
+                "            this.param = param;\n" +
+                "        }\n" +
                 "    \n" +
-                "    private int var;\n" +
-                "    private Object param;\n" +
-                "\n" +
-                "    public TestClassName(int var, Object param) {\n" +
-                "        this.var = var;\n" +
-                "        this.param = param;\n" +
-                "    }\n" +
                 "    @Override\n" +
                 "    public String renderInherited() {\n" +
                 "        return \"\";\n" +
@@ -93,6 +92,7 @@ public class TestTemplateEngineParser {
 //        System.out.print(classCode);
         Assert.assertEquals("package org.test;\n" +
                 "\n" +
+
                 "import org.featherj.View;\n" +
                 "\n" +
                 "public class TestClassName implements View {\n" +
@@ -105,8 +105,7 @@ public class TestTemplateEngineParser {
                 "    public String render() {\n" +
                 "        String newLine = System.getProperty(\"line.separator\");\n" +
                 "        StringBuilder view = new StringBuilder();\n" +
-                "        view.append(String.valueOf(  1 + 1  );\n" +
-                "        \n" +
+                "        view.append(String.valueOf(  1 + 1 ) );\n" +
                 "        return view.toString();\n" +
                 "    }\n" +
                 "}",
@@ -131,7 +130,7 @@ public class TestTemplateEngineParser {
                 "    \n" +
                 "    @Override\n" +
                 "    public String renderInherited() {\n" +
-                "        return \"\";\n" +
+                "        return render();\n" +
                 "    }\n" +
                 "    \n" +
                 "    public String render() {\n" +
@@ -142,5 +141,27 @@ public class TestTemplateEngineParser {
                 "    }\n" +
                 "}",
                 classCode);
+    }
+
+    @Test
+    public void testInvalidTagUsage() throws TemplateEngineParseException {
+        CharBuffer buffer = CharBuffer.wrap(
+                "<div>\n" +
+                "        Escaped tag <\\%\n" +
+                "        Escaped tag \\%>" +
+                "</div>");
+        TemplateParser parser = new TemplateParser(buffer, "org.test", "TestClassName");
+
+
+        try {
+            String classCode = parser.parse();
+        }
+        catch (TemplateEngineParseException exc) {
+            Assert.assertEquals("Line: 2, col: 24 TextSpan expected.", exc.getMessage());
+            return;
+        }
+        Assert.fail("Expected exception wasn't thrown.");
+//        System.out.print(classCode);
+
     }
 }

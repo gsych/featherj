@@ -136,7 +136,12 @@ public class TemplateParser {
         activeCodeBuilder.appendLine("@Override");
         activeCodeBuilder.appendLine("public String renderInherited() {");
         activeCodeBuilder.indent();
-        activeCodeBuilder.appendLine("return \"\";");
+        if (extendsClauseBuilder != null && extendsClauseBuilder.length() > 0) {
+            activeCodeBuilder.appendLine("return render();");
+        }
+        else {
+            activeCodeBuilder.appendLine("return \"\";");
+        }
         activeCodeBuilder.outdent();
         activeCodeBuilder.appendLine("}");
     }
@@ -309,16 +314,20 @@ public class TemplateParser {
     }
 
     private void text() throws TemplateEngineParseException {
+        lts();
         line();
         while (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.NewLine) {
-            match(TemplateToken.TokenType.NewLine);
+            lts();
             activeCodeBuilder.appendLine(javaCodeMode ? "" : "view.append(newLine);");
-            line();
+            if (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.TextSpan) {
+                line();
+            }
         }
     }
 
 
     private void line() throws TemplateEngineParseException {
+        textSpan();
         while (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.TextSpan) {
             textSpan();
         }
