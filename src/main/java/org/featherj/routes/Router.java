@@ -6,16 +6,24 @@ import org.featherj.actions.ActionResult;
 import org.featherj.routes.params.Param;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 public class Router {
 
-    public Router(Route[] routes) {
+    private final Route[] routes;
 
+    public Router(Route[] routes) {
+        this.routes = routes;
     }
 
-    public ActionResult routeAndRun(HttpServletRequest req) {
-        return null;  //To change body of created methods use File | Settings | File Templates.
+    public ActionResult routeAndRun(final HttpServletRequest req) {
+        Request request = new Request() {
+            @Override
+            public String getCompleteUrl() {
+                return req.getRequestURL().append("?").append(req.getQueryString()).toString();
+            }
+        };
+
+        
     }
 
     public static Route route(String urlPattern, final Action action) throws UrlParseException {
