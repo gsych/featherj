@@ -1,0 +1,4 @@
+src/test/java/org/featherj/test/views/gen
+target/
+.idea/
+FeatherJ.iml

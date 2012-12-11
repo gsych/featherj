@@ -26,12 +26,12 @@ public class Router {
         Request request = new Request() {
             @Override
             public String getCompleteUrl() {
-                StringBuffer url = req.getRequestURL();
+                String uri = req.getRequestURI();
                 String queryStr = req.getQueryString();
                 if (queryStr != null) {
-                    return url.append("?").append(queryStr).toString();
+                    return uri + "?" + queryStr;
                 }
-                return url.toString();
+                return uri;
             }
         };
         for (Route r : routes) {

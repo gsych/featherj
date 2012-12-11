@@ -117,10 +117,14 @@ public class TemplateParser {
         activeCodeBuilder = builder;
     }
 
+    private boolean wasExtendsDirective() {
+        return extendsClauseBuilder != null && extendsClauseBuilder.length() > 0;
+    }
+
     private void renderClassStart() {
         activeCodeBuilder.appendLine();
         activeCodeBuilder.append("public class ").append(className).append(" ");
-        if (extendsClauseBuilder != null && extendsClauseBuilder.length() > 0) {
+        if (wasExtendsDirective()) {
             activeCodeBuilder.append(extendsClauseBuilder);
         }
         else {
@@ -130,26 +134,17 @@ public class TemplateParser {
         activeCodeBuilder.indent();
     }
 
-    private void renderRenderInheritedMethod() {
-        activeCodeBuilder.appendLine();
-
-        activeCodeBuilder.appendLine("@Override");
-        activeCodeBuilder.appendLine("public String renderInherited() {");
-        activeCodeBuilder.indent();
-        if (extendsClauseBuilder != null && extendsClauseBuilder.length() > 0) {
-            activeCodeBuilder.appendLine("return render();");
-        }
-        else {
-            activeCodeBuilder.appendLine("return \"\";");
-        }
-        activeCodeBuilder.outdent();
-        activeCodeBuilder.appendLine("}");
-    }
-
     private void renderRenderMethodStart() {
         activeCodeBuilder.appendLine();
 
         activeCodeBuilder.appendLine("public String render() {");
+        activeCodeBuilder.indent();
+        activeCodeBuilder.appendLine("return render(\"\");");
+        activeCodeBuilder.outdent();
+        activeCodeBuilder.appendLine("}");
+        activeCodeBuilder.appendLine();
+
+        activeCodeBuilder.appendLine("public String render(String inheritedContent) {");
         activeCodeBuilder.indent();
         activeCodeBuilder.appendLine("String newLine = System.getProperty(\"line.separator\");");
         activeCodeBuilder.appendLine("StringBuilder view = new StringBuilder();");
@@ -157,7 +152,12 @@ public class TemplateParser {
 
     private void renderRenderMethodAndClassEnd() {
         activeCodeBuilder.appendLine();
-        activeCodeBuilder.appendLine("return view.toString();");
+        if (wasExtendsDirective()) {
+            activeCodeBuilder.appendLine("return super.render(view.toString());");
+        }
+        else {
+            activeCodeBuilder.appendLine("return view.toString();");
+        }
         activeCodeBuilder.outdent();
         activeCodeBuilder.appendLine("}");
         activeCodeBuilder.outdent();
@@ -178,7 +178,6 @@ public class TemplateParser {
         extendsDirective();
         renderClassStart();
         membersDirectives();
-        renderRenderInheritedMethod();
         renderRenderMethodStart();
         body();
         renderRenderMethodAndClassEnd();

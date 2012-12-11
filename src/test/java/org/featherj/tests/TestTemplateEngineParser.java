@@ -23,12 +23,11 @@ public class TestTemplateEngineParser {
                 "import org.featherj.test; \n" +
                 "public class TestClassName implements View {\n" +
                 "    \n" +
-                "    @Override\n" +
-                "    public String renderInherited() {\n" +
-                "        return \"\";\n" +
+                "    public String render() {\n" +
+                "        return render(\"\");\n" +
                 "    }\n" +
                 "    \n" +
-                "    public String render() {\n" +
+                "    public String render(String inheritedContent) {\n" +
                 "        String newLine = System.getProperty(\"line.separator\");\n" +
                 "        StringBuilder view = new StringBuilder();\n" +
                 "        \n" +
@@ -68,12 +67,11 @@ public class TestTemplateEngineParser {
                 "            this.param = param;\n" +
                 "        }\n" +
                 "    \n" +
-                "    @Override\n" +
-                "    public String renderInherited() {\n" +
-                "        return \"\";\n" +
+                "    public String render() {\n" +
+                "        return render(\"\");\n" +
                 "    }\n" +
                 "    \n" +
-                "    public String render() {\n" +
+                "    public String render(String inheritedContent) {\n" +
                 "        String newLine = System.getProperty(\"line.separator\");\n" +
                 "        StringBuilder view = new StringBuilder();\n" +
                 "        \n" +
@@ -97,12 +95,11 @@ public class TestTemplateEngineParser {
                 "\n" +
                 "public class TestClassName implements View {\n" +
                 "    \n" +
-                "    @Override\n" +
-                "    public String renderInherited() {\n" +
-                "        return \"\";\n" +
+                "    public String render() {\n" +
+                "        return render(\"\");\n" +
                 "    }\n" +
                 "    \n" +
-                "    public String render() {\n" +
+                "    public String render(String inheritedContent) {\n" +
                 "        String newLine = System.getProperty(\"line.separator\");\n" +
                 "        StringBuilder view = new StringBuilder();\n" +
                 "        view.append(String.valueOf(  1 + 1 ) );\n" +
@@ -128,16 +125,15 @@ public class TestTemplateEngineParser {
                 "import org.featherj.test.MyMasterView; \n" +
                 "public class TestClassName extends MyMasterView  {\n" +
                 "    \n" +
-                "    @Override\n" +
-                "    public String renderInherited() {\n" +
-                "        return render();\n" +
+                "    public String render() {\n" +
+                "        return render(\"\");\n" +
                 "    }\n" +
                 "    \n" +
-                "    public String render() {\n" +
+                "    public String render(String inheritedContent) {\n" +
                 "        String newLine = System.getProperty(\"line.separator\");\n" +
                 "        StringBuilder view = new StringBuilder();\n" +
                 "        \n" +
-                "        return view.toString();\n" +
+                "        return super.render(view.toString());\n" +
                 "    }\n" +
                 "}",
                 classCode);
