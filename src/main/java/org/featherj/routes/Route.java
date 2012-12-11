@@ -25,6 +25,23 @@ public abstract class Route {
         public abstract int match(String url, int currentUrlIndex);
     }
 
+    private class SlashRoutePart extends RoutePart {
+
+        public SlashRoutePart() {
+            super("/");
+        }
+
+        @Override
+        public int match(String url, int currentUrlIndex) {
+            if (url.charAt(currentUrlIndex) == '/') {
+                currentUrlIndex++;
+                return currentUrlIndex;
+            }
+
+            return -1;
+        }
+    }
+
     private class UrlRoutePart extends RoutePart {
         public UrlRoutePart(String str) {
             super(str);
@@ -81,10 +98,9 @@ public abstract class Route {
             while (hasNext()) {
                 char ch = peek();
                 if (ch == '/') {
-                    i++;
-                    continue;
+                    slashPart();
                 }
-                if (ch == ':') {
+                else if (ch == ':') {
                     paramPart();
                 }
                 else {
@@ -92,7 +108,7 @@ public abstract class Route {
                 }
             }
 
-            return readyParts.toArray(new RoutePart[0]);
+            return readyParts.toArray(new RoutePart[readyParts.size()]);
         }
 
         private char read() {
@@ -103,10 +119,11 @@ public abstract class Route {
         }
 
         private void read(char match) throws UrlParseException {
-            char ch = read();
+            char ch = peek();
             if (ch != match) {
                 throw new UrlParseException("'" + match + "' is expected, but got '" + ch + "'.");
             }
+            read();
         }
 
         private char peek() {
@@ -118,6 +135,12 @@ public abstract class Route {
 
         private boolean hasNext() {
             return i < urlPattern.length();
+        }
+
+        private void slashPart() throws UrlParseException {
+            read('/');
+            readyParts.add(new SlashRoutePart());
+            currentPartStr = new StringBuilder();
         }
 
         private void paramPart() throws UrlParseException {
@@ -166,15 +189,15 @@ public abstract class Route {
     }
 
     private final RoutePart[] urlPatternParts;
-    private final Map<String, Param<?>> params = new HashMap<String, Param<?>>();
 
     public Route(String urlPattern, Param<?>...params) throws UrlParseException {
+        Map<String, Param<?>> paramsMap = new HashMap<String, Param<?>>();
         for (Param<?> p : params) {
-            this.params.put(p.getKey(), p);
+            paramsMap.put(p.getKey(), p);
             p.clearValue();
         }
 
-        this.urlPatternParts = new UrlPatternParser(this.params).parse(urlPattern);
+        this.urlPatternParts = new UrlPatternParser(paramsMap).parse(urlPattern);
     }
 
     public boolean matches(Request request) {
@@ -182,20 +205,14 @@ public abstract class Route {
         int requestUrlIndex = 0;
 
         for (RoutePart part : urlPatternParts) {
-            if (requestUrl.charAt(requestUrlIndex) == '/') {
-                requestUrlIndex++;
-            }
             requestUrlIndex = part.match(requestUrl, requestUrlIndex);
             if (requestUrlIndex == -1) {
                 return false;
             }
         }
 
-        if (requestUrl.length() != requestUrlIndex) {
-            return false;
-        }
+        return requestUrl.length() == requestUrlIndex;
 
-        return true;
     }
 
     public abstract ActionResult runAction(Request request) throws Exception;

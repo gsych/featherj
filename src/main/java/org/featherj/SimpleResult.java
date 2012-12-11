@@ -6,6 +6,7 @@ public class SimpleResult implements ActionResult {
 
     private int status;
     private View view;
+    private String contentType = "text/html";
 
     public SimpleResult() {
     }
@@ -37,5 +38,15 @@ public class SimpleResult implements ActionResult {
     @Override
     public void setView(View view) {
         this.view = view;
+    }
+
+    @Override
+    public String getContentType() {
+        return contentType;
+    }
+
+    @Override
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

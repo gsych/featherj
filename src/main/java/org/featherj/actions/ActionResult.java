@@ -9,4 +9,7 @@ public interface ActionResult {
 
     View getView();
     void setView(View view);
+
+    String getContentType();
+    void setContentType(String contentType);
 }

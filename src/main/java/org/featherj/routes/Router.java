@@ -10,12 +10,37 @@ import java.util.List;
 
 public class Router {
 
-    public Router(Route[] routes) {
-
+    public class RouteNotFoundException extends Exception {
+        public RouteNotFoundException(String message) {
+            super(message);
+        }
     }
 
-    public ActionResult routeAndRun(HttpServletRequest req) {
-        return null;  //To change body of created methods use File | Settings | File Templates.
+    private final Route[] routes;
+
+    public Router(Route[] routes) {
+        this.routes = routes;
+    }
+
+    public ActionResult routeAndRun(final HttpServletRequest req) throws Exception {
+        Request request = new Request() {
+            @Override
+            public String getCompleteUrl() {
+                StringBuffer url = req.getRequestURL();
+                String queryStr = req.getQueryString();
+                if (queryStr != null) {
+                    return url.append("?").append(queryStr).toString();
+                }
+                return url.toString();
+            }
+        };
+        for (Route r : routes) {
+            if (r.matches(request)) {
+                return r.runAction(request);
+            }
+        }
+
+        throw new RouteNotFoundException("Cannot find route for \"" + request.getCompleteUrl() + "\"");
     }
 
     public static Route route(String urlPattern, final Action action) throws UrlParseException {

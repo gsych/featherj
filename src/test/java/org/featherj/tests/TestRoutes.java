@@ -11,6 +11,20 @@ import org.junit.Test;
 public class TestRoutes {
 
     @Test
+    public void testRootMatch() throws UrlParseException {
+        Route r = Router.route("/", null);
+
+        Request request = new Request() {
+            @Override
+            public String getCompleteUrl() {
+                return "/";
+            }
+        };
+
+        Assert.assertTrue(r.matches(request));
+    }
+
+    @Test
     public void testOneParamRouteMatch() throws UrlParseException {
         Route r = Router.route("/users/get/:id", new IntParam(":id"), null);
 
