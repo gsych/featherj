@@ -6,7 +6,6 @@ import org.featherj.actions.ActionResult;
 import org.featherj.routes.params.Param;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 public class Router {
 
@@ -25,7 +24,7 @@ public class Router {
     public ActionResult routeAndRun(final HttpServletRequest req) throws Exception {
         Request request = new Request() {
             @Override
-            public String getCompleteUrl() {
+            public String getUrl() {
                 String uri = req.getRequestURI();
                 String queryStr = req.getQueryString();
                 if (queryStr != null) {
@@ -40,7 +39,11 @@ public class Router {
             }
         }
 
-        throw new RouteNotFoundException("Cannot find route for \"" + request.getCompleteUrl() + "\"");
+        throw new RouteNotFoundException("Cannot find route for \"" + request.getUrl() + "\"");
+    }
+
+    public static Route resourceRoute(String urlPattern) throws UrlParseException {
+        return new StaticResourceFileRoute(urlPattern);
     }
 
     public static Route route(String urlPattern, final Action action) throws UrlParseException {

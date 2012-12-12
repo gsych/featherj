@@ -78,6 +78,18 @@ public abstract class Route {
         }
     }
 
+    private class AsteriskRoutePart extends RoutePart {
+
+        public AsteriskRoutePart() {
+            super("*");
+        }
+
+        @Override
+        public int match(String url, int currentUrlIndex) {
+            return url.length();
+        }
+    }
+
     private class UrlPatternParser {
         private final Map<String, Param<?>> params;
         private String urlPattern;
@@ -102,6 +114,9 @@ public abstract class Route {
                 }
                 else if (ch == ':') {
                     paramPart();
+                }
+                else if (ch == '*') {
+                    asteriskPart();
                 }
                 else {
                     urlPart();
@@ -168,6 +183,12 @@ public abstract class Route {
             return param;
         }
 
+        private void asteriskPart() throws UrlParseException {
+            read('*');
+            readyParts.add(new AsteriskRoutePart());
+            currentPartStr = new StringBuilder();
+        }
+
         private void urlPart() throws UrlParseException {
             char ch = peek();
             int index = i;
@@ -201,7 +222,7 @@ public abstract class Route {
     }
 
     public boolean matches(Request request) {
-        String requestUrl = request.getCompleteUrl();
+        String requestUrl = request.getUrl();
         int requestUrlIndex = 0;
 
         for (RoutePart part : urlPatternParts) {

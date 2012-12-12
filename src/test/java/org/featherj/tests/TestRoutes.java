@@ -16,7 +16,7 @@ public class TestRoutes {
 
         Request request = new Request() {
             @Override
-            public String getCompleteUrl() {
+            public String getUrl() {
                 return "/";
             }
         };
@@ -30,7 +30,7 @@ public class TestRoutes {
 
         Request request = new Request() {
             @Override
-            public String getCompleteUrl() {
+            public String getUrl() {
                 return "/users/get/10";
             }
         };
@@ -44,7 +44,7 @@ public class TestRoutes {
 
         Request request = new Request() {
             @Override
-            public String getCompleteUrl() {
+            public String getUrl() {
                 return "/users/get";
             }
         };
@@ -58,7 +58,7 @@ public class TestRoutes {
 
         Request request = new Request() {
             @Override
-            public String getCompleteUrl() {
+            public String getUrl() {
                 return "/users/get?id=10";
             }
         };
@@ -72,7 +72,7 @@ public class TestRoutes {
 
         Request request = new Request() {
             @Override
-            public String getCompleteUrl() {
+            public String getUrl() {
                 return "/users/get?id=10&limit=5";
             }
         };
@@ -87,7 +87,7 @@ public class TestRoutes {
 
         Request request = new Request() {
             @Override
-            public String getCompleteUrl() {
+            public String getUrl() {
                 return "/users/get/10/limit/5";
             }
         };
@@ -101,7 +101,7 @@ public class TestRoutes {
 
         Request request = new Request() {
             @Override
-            public String getCompleteUrl() {
+            public String getUrl() {
                 return "/users/get/10/limit/5";
             }
         };
@@ -115,11 +115,39 @@ public class TestRoutes {
 
         Request request = new Request() {
             @Override
-            public String getCompleteUrl() {
+            public String getUrl() {
                 return "/users/store/";
             }
         };
 
         Assert.assertFalse(r.matches(request));
+    }
+
+    @Test
+    public void testSimpleAsteriskMatch() throws UrlParseException {
+        Route route = Router.route("/css/*", null);
+
+        Request request1 = new Request() {
+            @Override
+            public String getUrl() {
+                return "/css/my.css";
+            }
+        };
+        Request request2 = new Request() {
+            @Override
+            public String getUrl() {
+                return "/css/lib/lib.css";
+            }
+        };
+        Request request3 = new Request() {
+            @Override
+            public String getUrl() {
+                return "/js/my.js";
+            }
+        };
+
+        Assert.assertTrue(route.matches(request1));
+        Assert.assertTrue(route.matches(request2));
+        Assert.assertFalse(route.matches(request3));
     }
 }

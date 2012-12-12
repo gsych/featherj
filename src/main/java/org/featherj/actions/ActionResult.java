@@ -1,6 +1,10 @@
 package org.featherj.actions;
 
+import eu.medsea.mimeutil.MimeType;
 import org.featherj.View;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public interface ActionResult {
 
@@ -10,6 +14,15 @@ public interface ActionResult {
     View getView();
     void setView(View view);
 
-    String getContentType();
-    void setContentType(String contentType);
+    MimeType getMimeType();
+    void setMimeType(MimeType contentType);
+
+    int getContentLength();
+    void setContentLength(int len);
+
+    /**
+     * Simply calls corresponding {@link ResponseBuilder#build} method of specified builder.
+     * (A part of visitor pattern).
+     */
+    void callBuilder(ResponseBuilder builder, HttpServletResponse response) throws IOException;
 }

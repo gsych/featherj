@@ -1,6 +1,7 @@
 package org.featherj;
 
 import org.featherj.actions.ActionResult;
+import org.featherj.actions.SimpleResult;
 
 import javax.servlet.http.HttpServletResponse;
 
