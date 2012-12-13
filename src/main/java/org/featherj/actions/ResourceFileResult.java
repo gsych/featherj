@@ -1,7 +1,5 @@
 package org.featherj.actions;
 
-import eu.medsea.mimeutil.MimeType;
-
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +7,7 @@ import java.io.IOException;
 public class ResourceFileResult extends SimpleResult {
     private final File resourceFile;
 
-    public ResourceFileResult(MimeType mimeType, File resourceFile) {
+    public ResourceFileResult(String mimeType, File resourceFile) {
         this.resourceFile = resourceFile;
         setMimeType(mimeType);
     }

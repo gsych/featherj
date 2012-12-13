@@ -1,7 +1,5 @@
 package org.featherj.actions;
 
-import eu.medsea.mimeutil.MimeType;
-import eu.medsea.mimeutil.MimeUtil2;
 import org.featherj.View;
 
 import javax.servlet.http.HttpServletResponse;
@@ -12,7 +10,7 @@ public class SimpleResult implements ActionResult {
 
     private int status;
     private View view;
-    private MimeType mimeType = MimeUtil2.getFirstMimeType("text/html");
+    private String mimeType ="text/html";
     private int contentLength;
 
     public SimpleResult() {
@@ -48,12 +46,12 @@ public class SimpleResult implements ActionResult {
     }
 
     @Override
-    public MimeType getMimeType() {
+    public String getMimeType() {
         return mimeType;
     }
 
     @Override
-    public void setMimeType(MimeType mimeType) {
+    public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
     }
 

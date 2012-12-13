@@ -1,6 +1,5 @@
 package org.featherj.actions;
 
-import eu.medsea.mimeutil.MimeType;
 import org.featherj.View;
 
 import javax.servlet.http.HttpServletResponse;
@@ -14,8 +13,8 @@ public interface ActionResult {
     View getView();
     void setView(View view);
 
-    MimeType getMimeType();
-    void setMimeType(MimeType contentType);
+    String getMimeType();
+    void setMimeType(String contentType);
 
     int getContentLength();
     void setContentLength(int len);

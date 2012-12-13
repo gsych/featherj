@@ -1,15 +1,14 @@
 package org.featherj.routes;
 
-import eu.medsea.mimeutil.MimeType;
-import eu.medsea.mimeutil.MimeUtil2;
 import org.featherj.Request;
 import org.featherj.actions.ActionResult;
 import org.featherj.actions.ResourceFileResult;
 import org.featherj.routes.params.Param;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
+import java.net.URLConnection;
 
 public class StaticResourceFileRoute extends Route {
 
@@ -18,22 +17,35 @@ public class StaticResourceFileRoute extends Route {
     }
 
     @Override
-    public ActionResult runAction(Request request) throws Exception {
-        URL url = getClass().getClassLoader().getResource("");
-        File file = new File("");
-        return new ResourceFileResult(getMimeType(file), file);
-    }
-
-    private MimeType getMimeType(File file) {
-        MimeUtil2 util = new MimeUtil2();
-        util.registerMimeDetector("eu.medsea.mimeutil.detector.ExtensionMimeDetector");
-        util.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
-
-        Collection<MimeType> mimeTypes = util.getMimeTypes(file);
-        for (MimeType t : mimeTypes) {
-            return t;
+    public boolean matches(Request request) {
+        if (!super.matches(request)) {
+            return false;
         }
 
-        return MimeUtil2.UNKNOWN_MIME_TYPE;
+        try {
+            URL url = getClass().getResource(request.getUrl());
+            if (url == null) {
+                return false;
+            }
+            File file = new File(url.toURI());
+            return file.exists();
+        }
+        catch (Exception ignored) {
+        }
+
+        return false;
+    }
+
+    @Override
+    public ActionResult runAction(Request request) throws Exception {
+        URL url = getClass().getResource(request.getUrl());
+        File file = new File(url.toURI());
+        return new ResourceFileResult(getMimeType(url), file);
+    }
+
+    private String getMimeType(URL url) throws IOException {
+//        URLConnection uc = url.openConnection();
+//        return uc.gue
+        return URLConnection.guessContentTypeFromName(url.getFile());
     }
 }
