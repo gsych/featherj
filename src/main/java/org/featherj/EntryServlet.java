@@ -42,7 +42,7 @@ public abstract class EntryServlet extends HttpServlet {
         public void build(ResourceFileResult result, HttpServletResponse response) throws IOException {
             //FIXME: call build((SimpleResult) result, response) when ViewResult is extracted from SimpleResult
             response.setStatus(result.getStatus());
-            response.setContentType(result.getMimeType());
+            //response.setContentType(result.getMimeType());
             response.setContentLength(result.getContentLength());
 
             FileInputStream in = null;

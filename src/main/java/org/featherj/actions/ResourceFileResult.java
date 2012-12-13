@@ -10,6 +10,7 @@ public class ResourceFileResult extends SimpleResult {
     public ResourceFileResult(String mimeType, File resourceFile) {
         this.resourceFile = resourceFile;
         setMimeType(mimeType);
+        setStatus(HttpServletResponse.SC_OK);
     }
 
     public File getResourceFile() {
