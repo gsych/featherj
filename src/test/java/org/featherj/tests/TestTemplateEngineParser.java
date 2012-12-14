@@ -1,8 +1,8 @@
 package org.featherj.tests;
 
 import junit.framework.Assert;
-import org.featherj.tools.templates.TemplateEngineParseException;
-import org.featherj.tools.templates.TemplateParser;
+import org.featherj.templates.TemplateEngineParseException;
+import org.featherj.templates.TemplateParser;
 import org.junit.Test;
 
 import java.nio.CharBuffer;

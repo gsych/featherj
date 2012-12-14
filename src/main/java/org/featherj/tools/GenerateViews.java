@@ -4,7 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.featherj.tools.templates.TemplateEngine;
+import org.featherj.templates.TemplateEngine;
 
 import java.io.File;
 import java.io.FileWriter;

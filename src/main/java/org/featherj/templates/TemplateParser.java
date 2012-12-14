@@ -1,4 +1,4 @@
-package org.featherj.tools.templates;
+package org.featherj.templates;
 
 import java.nio.CharBuffer;
 
