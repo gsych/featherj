@@ -2,11 +2,11 @@ package org.featherj.routes.params;
 
 import java.util.regex.Pattern;
 
-public class IntParam extends Param<Integer> {
+public class IntRouteParam extends RouteParam<Integer> {
 
     private Integer value;
 
-    public IntParam(String key) {
+    public IntRouteParam(String key) {
         super(key, Pattern.compile("[1-9][0-9]*"));
     }
 

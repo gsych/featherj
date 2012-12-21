@@ -1,8 +1,9 @@
 package org.featherj.routes;
 
 import org.featherj.Request;
+import org.featherj.RequestImpl;
 import org.featherj.actions.ActionResult;
-import org.featherj.routes.params.Param;
+import org.featherj.routes.params.RouteParam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +24,8 @@ public abstract class Route {
         }
 
         public abstract int match(String url, int currentUrlIndex);
+
+        public abstract void fillParams(RequestImpl request);
     }
 
     private class SlashRoutePart extends RoutePart {
@@ -40,6 +43,10 @@ public abstract class Route {
 
             return -1;
         }
+
+        @Override
+        public void fillParams(RequestImpl request) {
+        }
     }
 
     private class UrlRoutePart extends RoutePart {
@@ -56,12 +63,16 @@ public abstract class Route {
 
             return -1;
         }
+
+        @Override
+        public void fillParams(RequestImpl request) {
+        }
     }
 
     private class ParamKeyRoutePart extends RoutePart {
-        private Param<?> param;
+        private RouteParam<?> param;
 
-        public ParamKeyRoutePart(Param<?> param) {
+        public ParamKeyRoutePart(RouteParam<?> param) {
             super(param.getKey());
             this.param = param;
         }
@@ -76,6 +87,11 @@ public abstract class Route {
 
             return -1;
         }
+
+        @Override
+        public void fillParams(RequestImpl request) {
+            request.param(param.getKey(), param.getValue());
+        }
     }
 
     private class AsteriskRoutePart extends RoutePart {
@@ -88,16 +104,20 @@ public abstract class Route {
         public int match(String url, int currentUrlIndex) {
             return url.length();
         }
+
+        @Override
+        public void fillParams(RequestImpl request) {
+        }
     }
 
     private class UrlPatternParser {
-        private final Map<String, Param<?>> params;
+        private final Map<String, RouteParam<?>> params;
         private String urlPattern;
         private int i;
         private StringBuilder currentPartStr;
         private ArrayList<RoutePart> readyParts;
 
-        public UrlPatternParser(Map<String, Param<?>> params) {
+        public UrlPatternParser(Map<String, RouteParam<?>> params) {
             this.params = params;
         }
 
@@ -174,11 +194,11 @@ public abstract class Route {
             currentPartStr = new StringBuilder();
         }
 
-        private Param<?> resolveParam(String paramKey) throws UrlParseException {
-            Param<?> param = this.params.get(paramKey);
+        private RouteParam<?> resolveParam(String paramKey) throws UrlParseException {
+            RouteParam<?> param = this.params.get(paramKey);
             if (param == null) {
                 throw new UrlParseException(
-                    "URL pattern parameter reference \"" + paramKey + "\" doesn't have corresponding Param declaration.");
+                    "URL pattern parameter reference \"" + paramKey + "\" doesn't have corresponding RouteParam declaration.");
             }
             return param;
         }
@@ -211,9 +231,9 @@ public abstract class Route {
 
     private final RoutePart[] urlPatternParts;
 
-    public Route(String urlPattern, Param<?>...params) throws UrlParseException {
-        Map<String, Param<?>> paramsMap = new HashMap<String, Param<?>>();
-        for (Param<?> p : params) {
+    public Route(String urlPattern, RouteParam<?>...params) throws UrlParseException {
+        Map<String, RouteParam<?>> paramsMap = new HashMap<String, RouteParam<?>>();
+        for (RouteParam<?> p : params) {
             paramsMap.put(p.getKey(), p);
             p.clearValue();
         }
@@ -233,8 +253,13 @@ public abstract class Route {
         }
 
         return requestUrl.length() == requestUrlIndex;
-
     }
 
     public abstract ActionResult runAction(Request request) throws Exception;
+
+    public void fillParams(RequestImpl request) {
+        for (RoutePart part : urlPatternParts) {
+            part.fillParams(request);
+        }
+    }
 }

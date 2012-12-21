@@ -1,14 +1,12 @@
 package org.featherj.routes.params;
 
-import org.featherj.Request;
-
 import java.util.regex.Pattern;
 
-public abstract class Param<T> {
+public abstract class RouteParam<T> {
     private final String key;
     private final Pattern expr;
 
-    public Param(String key, Pattern expr) {
+    public RouteParam(String key, Pattern expr) {
         this.key = key;
         this.expr = expr;
     }

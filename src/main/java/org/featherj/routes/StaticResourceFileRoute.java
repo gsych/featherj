@@ -3,7 +3,7 @@ package org.featherj.routes;
 import org.featherj.Request;
 import org.featherj.actions.ActionResult;
 import org.featherj.actions.ResourceFileResult;
-import org.featherj.routes.params.Param;
+import org.featherj.routes.params.RouteParam;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.net.URLConnection;
 public class StaticResourceFileRoute extends Route {
 
     public StaticResourceFileRoute(String urlPattern) throws UrlParseException {
-        super(urlPattern, new Param<?>[0]);
+        super(urlPattern, new RouteParam<?>[0]);
     }
 
     @Override

@@ -18,15 +18,18 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 
+import org.featherj.db.DbRecord;
 import org.featherj.db.Field;
 
 /**
  * This class provides only one new additional method - SuperbResultSet.get(Field<T>) allowing to get field value without determining its type
  */
-public class ExtendedResultSet implements ResultSet {
+public class ExResultSet implements ResultSet {
 
 	/**
 	 * Stores simple ResultSet instance
@@ -37,7 +40,7 @@ public class ExtendedResultSet implements ResultSet {
 	 * Constructor
 	 * @param simpleResultSet
 	 */
-	public ExtendedResultSet(ResultSet simpleResultSet){
+	public ExResultSet(ResultSet simpleResultSet){
 		if (simpleResultSet == null){
 			throw new IllegalArgumentException("ResultSet to be wrapped can't be null.");
 		}
@@ -55,6 +58,20 @@ public class ExtendedResultSet implements ResultSet {
 		String columnName = field.getColumnName();
 		return (T) getObject(columnName);
 	}
+
+    public DbRecord getRecord() throws SQLException {
+        DbRecord record = new DbRecord();
+        record.readFrom(this);
+        return record;
+    }
+
+    public List<DbRecord> getRecords() throws SQLException {
+        ArrayList<DbRecord> records = new ArrayList<DbRecord>();
+        while(next()) {
+            records.add(getRecord());
+        }
+        return records;
+    }
 
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {

@@ -13,8 +13,10 @@ import org.apache.commons.io.FileUtils;
 
 public class DbTablesGenerator extends DbBasedGenerator{
 
-    private final String outputDir;
+    private final String tablesOutputDir;
+    private final String recordsOutputDir;
     private String basePackage;
+    private Map<String, DbColumn> currentTableSchema;
 
     public static void main(String[] args) throws Exception {
 
@@ -52,7 +54,8 @@ public class DbTablesGenerator extends DbBasedGenerator{
 
     public DbTablesGenerator(Connection connection, String outputDir, String relativeTargetPath) {
         super(connection);
-        this.outputDir = outputDir;
+        this.tablesOutputDir = outputDir;
+        this.recordsOutputDir = outputDir + "\\records";
         this.basePackage = relativeTargetPath.replace(File.separatorChar, '.');
         if (basePackage != null && basePackage.length() > 0 && basePackage.charAt(basePackage.length() - 1) == '.') {
             basePackage = basePackage.substring(0, basePackage.length() - 1);
@@ -63,7 +66,9 @@ public class DbTablesGenerator extends DbBasedGenerator{
 
         try {
             for (String tableName : getTableNames()) {
+                currentTableSchema = queryTableScheme(tableName);
                 generateTableClass(tableName);
+                generateRecordClass(tableName);
             }
         }
         finally {
@@ -76,11 +81,11 @@ public class DbTablesGenerator extends DbBasedGenerator{
     private void generateTableClass(String tableName) throws Exception {
         init();
 
-        System.out.println("Generating " + tableName);
+        System.out.println("Generating table class for " + tableName);
 
         String className = camelCase(tableName);
 
-        generatePackageAndImports();
+        generateTableClassPackageAndImports();
 
         appendln("public class " + className + " extends DbTable<" + className + "> {");
         appendln();
@@ -92,10 +97,31 @@ public class DbTablesGenerator extends DbBasedGenerator{
         outdent();
         append("}");
 
-        writeToFile(className);
+        writeTableClassToFile(className);
     }
 
-    private void generatePackageAndImports() {
+    private void generateRecordClass(String tableName) throws Exception {
+        init();
+
+        System.out.println("Generating record class for " + tableName);
+
+        String tableClassName = camelCase(tableName);
+        String className = tableClassName + "Record";
+
+        generateRecordClassPackageAndImports(tableClassName);
+
+        appendln("public class " + className + " extends DbRecord {");
+        appendln();
+        indent();
+        generateRecordConstructors(tableClassName, className);
+        generateRecordGettersAndSetters(tableClassName);
+        outdent();
+        append("}");
+
+        writeRecordClassToFile(className);
+    }
+
+    private void generateTableClassPackageAndImports() {
         appendln("package " + basePackage + ";");
 
         appendln();
@@ -107,15 +133,25 @@ public class DbTablesGenerator extends DbBasedGenerator{
         appendln();
     }
 
+    private void generateRecordClassPackageAndImports(String tableClassName) {
+        appendln("package " + basePackage + ".records;");
+
+        appendln();
+
+        appendln("import static " + basePackage + "." + tableClassName + "." + tableClassName + ";");
+        appendln("import org.featherj.db.DbRecord;");
+        appendln("import java.sql.Timestamp;");
+        appendln();
+    }
+
     private void generateSingleton(String className) {
         appendln("public static final " + className + " " + className + " = new " + className + "();");
         appendln();
     }
 
     private void generateFields(String tableName) throws Exception {
-        Map<String, DbColumn> schema = queryTableScheme(tableName);
-        for (String columnName : schema.keySet()) {
-            DbColumn column = schema.get(columnName);
+        for (String columnName : currentTableSchema.keySet()) {
+            DbColumn column = currentTableSchema.get(columnName);
             String typeName = "Field<" + getColumnJavaType(column.getSqlType()) + ">";
             append("public final " + typeName + " " + camelCase(columnName));
             appendln(" = new " + typeName + "(\"" + columnName + "\", this);");
@@ -139,6 +175,22 @@ public class DbTablesGenerator extends DbBasedGenerator{
         appendln();
     }
 
+    private void generateRecordConstructors(String tableClassName, String className) {
+        appendln("public " + className + "() {");
+        indent();
+        appendln("super(" + tableClassName + ");");
+        outdent();
+        appendln("}");
+        appendln();
+
+        appendln("public " + className + "(DbRecord innerRecord) {");
+        indent();
+        appendln("super(innerRecord);");
+        outdent();
+        appendln("}");
+        appendln();
+    }
+
     private void generateMethods(String tableName, String className) {
         appendln("@Override");
         appendln("public " + className + " as(String alias) {");
@@ -147,6 +199,26 @@ public class DbTablesGenerator extends DbBasedGenerator{
         outdent();
         appendln("}");
         appendln();
+    }
+
+    private void generateRecordGettersAndSetters(String tableClassName) throws Exception {
+        for (String columnName : currentTableSchema.keySet()) {
+            DbColumn column = currentTableSchema.get(columnName);
+            String typeName = getColumnJavaType(column.getSqlType());
+            String fieldName = camelCase(columnName);
+            appendln("public " + typeName + " get" + fieldName + "() {");
+            indent();
+            appendln("return getValue(" + tableClassName + "." + fieldName + ");");
+            outdent();
+            appendln("}");
+            appendln();
+            appendln("public void set" + fieldName + "(" + typeName + " value) {");
+            indent();
+            appendln("setValue(" + tableClassName + "." + fieldName + ", value);");
+            outdent();
+            appendln("}");
+            appendln();
+        }
     }
 
     private static String getColumnJavaType(int sqlType) throws Exception {
@@ -183,7 +255,15 @@ public class DbTablesGenerator extends DbBasedGenerator{
         }
     }
 
-    private void writeToFile(String className) throws IOException, URISyntaxException {
+    private void writeTableClassToFile(String className) throws IOException, URISyntaxException {
+        writeToFile(className, tablesOutputDir);
+    }
+
+    private void writeRecordClassToFile(String className) throws IOException, URISyntaxException {
+        writeToFile(className, recordsOutputDir);
+    }
+
+    private void writeToFile(String className, String outputDir) throws IOException, URISyntaxException {
         File dir = new File(outputDir);
         dir.mkdirs();
         FileUtils.writeStringToFile(new File(dir, className + ".java"), getCurrentClass().toString());

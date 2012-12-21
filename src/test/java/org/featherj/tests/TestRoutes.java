@@ -2,19 +2,20 @@ package org.featherj.tests;
 
 import junit.framework.Assert;
 import org.featherj.Request;
+import org.featherj.RequestImpl;
 import org.featherj.routes.Route;
 import org.featherj.routes.Router;
 import org.featherj.routes.UrlParseException;
-import org.featherj.routes.params.IntParam;
+import org.featherj.routes.params.IntRouteParam;
 import org.junit.Test;
 
 public class TestRoutes {
 
     @Test
     public void testRootMatch() throws UrlParseException {
-        Route r = Router.route("/", null);
+        Route r = Router.route(null, "/");
 
-        Request request = new Request() {
+        Request request = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/";
@@ -26,9 +27,9 @@ public class TestRoutes {
 
     @Test
     public void testOneParamRouteMatch() throws UrlParseException {
-        Route r = Router.route("/users/get/:id", new IntParam(":id"), null);
+        Route r = Router.route(null, "/users/get/:id", new IntRouteParam(":id"));
 
-        Request request = new Request() {
+        Request request = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/users/get/10";
@@ -40,9 +41,9 @@ public class TestRoutes {
 
     @Test
     public void testParameterlessRouteMatch() throws UrlParseException {
-        Route r = Router.route("/users/get", null);
+        Route r = Router.route(null, "/users/get");
 
-        Request request = new Request() {
+        Request request = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/users/get";
@@ -54,9 +55,9 @@ public class TestRoutes {
 
     @Test
     public void testGETStyleParameterRouteMatch() throws UrlParseException {
-        Route r = Router.route("/users/get?id=:id", new IntParam(":id"), null);
+        Route r = Router.route(null, "/users/get?id=:id", new IntRouteParam(":id"));
 
-        Request request = new Request() {
+        Request request = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/users/get?id=10";
@@ -68,9 +69,9 @@ public class TestRoutes {
 
     @Test
     public void test2GETStyleParameterRouteMatch() throws UrlParseException {
-        Route r = Router.route("/users/get?id=:id&limit=:limit", new IntParam(":id"), new IntParam(":limit"), null);
+        Route r = Router.route(null, "/users/get?id=:id&limit=:limit", new IntRouteParam(":id"), new IntRouteParam(":limit"));
 
-        Request request = new Request() {
+        Request request = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/users/get?id=10&limit=5";
@@ -82,10 +83,10 @@ public class TestRoutes {
 
     @Test
     public void test2ParamsRouteMatch() throws UrlParseException {
-        Route r1 = Router.route("/users/get/:id", new IntParam(":id"), null);
-        Route r2 = Router.route("/users/get/:id/limit/:limit", new IntParam(":id"), new IntParam(":limit"), null);
+        Route r1 = Router.route(null, "/users/get/:id", new IntRouteParam(":id"));
+        Route r2 = Router.route(null, "/users/get/:id/limit/:limit", new IntRouteParam(":id"), new IntRouteParam(":limit"));
 
-        Request request = new Request() {
+        Request request = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/users/get/10/limit/5";
@@ -96,10 +97,11 @@ public class TestRoutes {
         Assert.assertTrue(r2.matches(request));
     }
 
+    @Test
     public void test2RoutesMatch() throws UrlParseException {
-        Route r = Router.route("/users/get/:id/limit/:limit", new IntParam(":id"), new IntParam(":limit"), null);
+        Route r = Router.route(null, "/users/get/:id/limit/:limit", new IntRouteParam(":id"), new IntRouteParam(":limit"));
 
-        Request request = new Request() {
+        Request request = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/users/get/10/limit/5";
@@ -111,9 +113,9 @@ public class TestRoutes {
 
     @Test
     public void testUnmatchedRoute() throws UrlParseException {
-        Route r = Router.route("/users/get/:id", new IntParam(":id"), null);
+        Route r = Router.route(null, "/users/get/:id", new IntRouteParam(":id"));
 
-        Request request = new Request() {
+        Request request = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/users/store/";
@@ -125,21 +127,21 @@ public class TestRoutes {
 
     @Test
     public void testSimpleAsteriskMatch() throws UrlParseException {
-        Route route = Router.route("/css/*", null);
+        Route route = Router.route(null, "/css/*");
 
-        Request request1 = new Request() {
+        Request request1 = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/css/my.css";
             }
         };
-        Request request2 = new Request() {
+        Request request2 = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/css/lib/lib.css";
             }
         };
-        Request request3 = new Request() {
+        Request request3 = new RequestImpl(null) {
             @Override
             public String getUrl() {
                 return "/js/my.js";

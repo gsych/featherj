@@ -28,7 +28,7 @@ public abstract class QueryPartBase {
         return (T) query;
     }
 
-    public ExtendedPreparedStatement getStatement(Connection connection) throws SQLException, IOException {
+    public ExPreparedStatement getStatement(Connection connection) throws SQLException, IOException {
         return query.getStatement(connection);
     }
 

@@ -1,5 +1,6 @@
 package org.featherj.db;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.featherj.db.queries.QueryAssemblyUnit;
@@ -11,14 +12,24 @@ import org.featherj.db.queries.QueryAssemblyUnit;
 public abstract class DbTable<T extends DbTable> implements QueryAssemblyUnit {
     private String tableName;
     private String alias;
+    private HashMap<String, Field<?>> fields = new HashMap<String, Field<?>>();
 
-    public DbTable(String tableName) {
+    protected DbTable(String tableName, Field<?>...fields) {
         this.tableName = tableName;
+        if (fields != null) {
+            for (Field<?> f : fields) {
+                this.fields.put(f.getColumnName(), f);
+            }
+        }
     }
 
-    public DbTable(String tableName, String alias) {
-        this.tableName = tableName;
+    protected DbTable(String tableName, String alias) {
+        this(tableName);
         this.alias = alias;
+    }
+
+    protected HashMap<String, Field<?>> getFields() {
+        return fields;
     }
 
     public String getTableName() {

@@ -24,9 +24,9 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 /**
  * The main difference between ExtendedStatement and a simple {@link PreparedStatement} is that this statement
- * returns an ExtendedResultSet class simplifying data retrieval.
+ * returns an ExResultSet class simplifying data retrieval.
  */
-public class ExtendedPreparedStatement implements PreparedStatement {
+public class ExPreparedStatement implements PreparedStatement {
 
 	/**
 	 * Stores wrapped prepared statement instance
@@ -37,7 +37,7 @@ public class ExtendedPreparedStatement implements PreparedStatement {
 	 * Constructor
 	 * @param simpleStatement
 	 */
-	public ExtendedPreparedStatement(PreparedStatement simpleStatement){
+	public ExPreparedStatement(PreparedStatement simpleStatement){
 		if (simpleStatement == null){
 			throw new IllegalArgumentException("PreparedStatement to be wrapped can't be null.");
 		}
@@ -46,20 +46,20 @@ public class ExtendedPreparedStatement implements PreparedStatement {
 	}
 
 	/**
-	 * This method returns {@link ExtendedResultSet} class instance instead of simple {@link ResultSet}
+	 * This method returns {@link ExResultSet} class instance instead of simple {@link ResultSet}
 	 */
 	@Override
-	public ExtendedResultSet executeQuery(String sql) throws SQLException {
-		return new ExtendedResultSet(getStatement().executeQuery(sql));
+	public ExResultSet executeQuery(String sql) throws SQLException {
+		return new ExResultSet(getStatement().executeQuery(sql));
 	}
 
 	/**
-	 * This method also returns {@link ExtendedResultSet}
+	 * This method also returns {@link ExResultSet}
 	 * @param sql
 	 */
 	@Override
-	public ExtendedResultSet executeQuery() throws SQLException {
-		return new ExtendedResultSet(getStatement().executeQuery());
+	public ExResultSet executeQuery() throws SQLException {
+		return new ExResultSet(getStatement().executeQuery());
 	}
 
 	/**

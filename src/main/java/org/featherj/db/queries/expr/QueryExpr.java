@@ -57,6 +57,10 @@ public abstract class QueryExpr<T> implements QueryAssemblyUnit {
         return new QueryBoolExpr(this, Operator.In, new QueryListExpr<T>(values));
     }
 
+    public QueryBoolExpr like(String pattern) {
+        return new QueryBoolExpr(this, Operator.Like, new QueryVal<String>(pattern));
+    }
+
     public QueryExpr<T> mult(QueryExpr<? extends Number> expr) {
         return new QueryBinExpr<T>(this, Operator.Mult, expr);
     }
@@ -168,10 +172,6 @@ public abstract class QueryExpr<T> implements QueryAssemblyUnit {
 
     /**
      * Constructs expression for <code>CONCAT</code> SQL function.
-     *
-     * @param <T> Return type of the function.
-     * @param expr Argument passed to <code>CONCAT</code> function.
-     * @return
      */
     public static QueryFuncExpr<String> concat(QueryExpr...exprs) {
         return new QueryFuncExpr<String>(Functions.Concat, exprs);

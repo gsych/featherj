@@ -65,7 +65,7 @@ public class InsertQuery extends QueryBase {
 
             valuesPart.assembleBatch(sb, parameterValues, i, MAX_ROWS_PER_QUERY);
 
-            ExtendedPreparedStatement statement = prepareStatement(connection, sb, parameterValues);
+            ExPreparedStatement statement = prepareStatement(connection, sb, parameterValues);
             statement.executeUpdate();
             statement.close();
         }

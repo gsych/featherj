@@ -99,15 +99,15 @@ public abstract class QueryBase extends QueryPartBase {
      * @throws SQLException
      * @throws IOException
      */
-    public ExtendedPreparedStatement getStatement(Connection connection) throws SQLException, IOException {
+    public ExPreparedStatement getStatement(Connection connection) throws SQLException, IOException {
         ArrayList<Object> parameterValues = new ArrayList<Object>();
         StringBuilder sb = new StringBuilder();
         assembleSql(sb, parameterValues);
         return prepareStatement(connection, sb, parameterValues);
     }
 
-    public ExtendedPreparedStatement prepareStatement(Connection connection, StringBuilder sb, List<Object> parameterValues) throws SQLException, IOException {
-        ExtendedPreparedStatement statement =  new ExtendedPreparedStatement(connection.prepareStatement(sb.toString()));
+    public ExPreparedStatement prepareStatement(Connection connection, StringBuilder sb, List<Object> parameterValues) throws SQLException, IOException {
+        ExPreparedStatement statement =  new ExPreparedStatement(connection.prepareStatement(sb.toString()));
         int parameterIndex = 1;
         for (Object value : parameterValues) {
             statement.setObject(parameterIndex, value);
