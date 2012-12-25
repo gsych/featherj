@@ -42,7 +42,7 @@ public class TemplateParser {
             return this;
         }
 
-        public CodeBuilder appendToken(TemplateToken token) {
+        public CodeBuilder append(TemplateToken token) {
             for (int i = token.getStart(); i < token.getEnd(); i++) {
                 char ch = buffer.get(i);
                 switch (ch) {
@@ -53,6 +53,9 @@ public class TemplateParser {
                         break;
                     case '\\':
                         append(javaCodeMode ? "\\" : "\\\\");
+                        break;
+                    case '\n':
+                        appendLine();
                         break;
                     default:
                         append(ch);
@@ -185,7 +188,7 @@ public class TemplateParser {
 
     private void lts() throws TemplateEngineParseException {
         while (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.NewLine) {
-            match(TemplateToken.TokenType.NewLine);
+            activeCodeBuilder.append(match(TemplateToken.TokenType.NewLine));
         }
     }
 
@@ -316,8 +319,10 @@ public class TemplateParser {
         lts();
         line();
         while (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.NewLine) {
+            if (!javaCodeMode) {
+                activeCodeBuilder.append(" view.append(newLine);");
+            }
             lts();
-            activeCodeBuilder.appendLine(javaCodeMode ? "" : "view.append(newLine);");
             if (lexer.hasNext() && lexer.lookahead().getTokenType() == TemplateToken.TokenType.TextSpan) {
                 line();
             }
@@ -337,7 +342,7 @@ public class TemplateParser {
         if (!javaCodeMode) {
             activeCodeBuilder.append("view.append(\"");
         }
-        activeCodeBuilder.appendToken(token);
+        activeCodeBuilder.append(token);
         if (!javaCodeMode) {
             activeCodeBuilder.append("\");");
         }

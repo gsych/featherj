@@ -38,6 +38,37 @@ public class TestTemplateEngineParser {
     }
 
     @Test
+    public void testMultipleImportDirectives() throws TemplateEngineParseException {
+        CharBuffer buffer = CharBuffer.wrap(
+                "<% import org.test1; %>\n" +
+                "<% import org.test2; %>");
+        TemplateParser parser = new TemplateParser(buffer, "org.test", "TestClassName");
+
+        String classCode = parser.parse();
+//        System.out.print(classCode);
+        Assert.assertEquals(
+                "package org.test;\n" +
+                        "\n" +
+                        "import org.featherj.View;\n" +
+                        "import org.test1; \n" +
+                        "import org.test2; \n" +
+                        "public class TestClassName implements View {\n" +
+                        "    \n" +
+                        "    public String render() {\n" +
+                        "        return render(\"\");\n" +
+                        "    }\n" +
+                        "    \n" +
+                        "    public String render(String inheritedContent) {\n" +
+                        "        String newLine = System.getProperty(\"line.separator\");\n" +
+                        "        StringBuilder view = new StringBuilder();\n" +
+                        "        \n" +
+                        "        return view.toString();\n" +
+                        "    }\n" +
+                        "}",
+                classCode);
+    }
+
+    @Test
     public void testMembersDirective() throws TemplateEngineParseException {
         CharBuffer buffer = CharBuffer.wrap(
                 "<% members\n"+
@@ -56,28 +87,30 @@ public class TestTemplateEngineParser {
         //System.out.print(classCode);
         Assert.assertEquals(
                 "package org.test;\n" +
-                "\n" +
-                "import org.featherj.View;\n" +
-                "\n" +
-                "public class TestClassName implements View {\n" +
-                "        private int var;\n" +
-                "        private Object param;\n" +
-                "        public TestClassName(int var, Object param) {\n" +
-                "            this.var = var;\n" +
-                "            this.param = param;\n" +
-                "        }\n" +
-                "    \n" +
-                "    public String render() {\n" +
-                "        return render(\"\");\n" +
-                "    }\n" +
-                "    \n" +
-                "    public String render(String inheritedContent) {\n" +
-                "        String newLine = System.getProperty(\"line.separator\");\n" +
-                "        StringBuilder view = new StringBuilder();\n" +
-                "        \n" +
-                "        return view.toString();\n" +
-                "    }\n" +
-                "}",
+                        "\n" +
+                        "import org.featherj.View;\n" +
+                        "\n" +
+                        "public class TestClassName implements View {\n" +
+                        "    \n" +
+                        "        private int var;\n" +
+                        "        private Object param;\n" +
+                        "    \n" +
+                        "        public TestClassName(int var, Object param) {\n" +
+                        "            this.var = var;\n" +
+                        "            this.param = param;\n" +
+                        "        }\n" +
+                        "    \n" +
+                        "    public String render() {\n" +
+                        "        return render(\"\");\n" +
+                        "    }\n" +
+                        "    \n" +
+                        "    public String render(String inheritedContent) {\n" +
+                        "        String newLine = System.getProperty(\"line.separator\");\n" +
+                        "        StringBuilder view = new StringBuilder();\n" +
+                        "        \n" +
+                        "        return view.toString();\n" +
+                        "    }\n" +
+                        "}",
                 classCode);
     }
 
@@ -120,22 +153,23 @@ public class TestTemplateEngineParser {
 //        System.out.print(classCode);
         Assert.assertEquals(
                 "package org.test;\n" +
-                "\n" +
-                "import org.featherj.View;\n" +
-                "import org.featherj.test.MyMasterView; \n" +
-                "public class TestClassName extends MyMasterView  {\n" +
-                "    \n" +
-                "    public String render() {\n" +
-                "        return render(\"\");\n" +
-                "    }\n" +
-                "    \n" +
-                "    public String render(String inheritedContent) {\n" +
-                "        String newLine = System.getProperty(\"line.separator\");\n" +
-                "        StringBuilder view = new StringBuilder();\n" +
-                "        \n" +
-                "        return super.render(view.toString());\n" +
-                "    }\n" +
-                "}",
+                        "\n" +
+                        "import org.featherj.View;\n" +
+                        "import org.featherj.test.MyMasterView; \n" +
+                        "\n" +
+                        "public class TestClassName extends MyMasterView  {\n" +
+                        "    \n" +
+                        "    public String render() {\n" +
+                        "        return render(\"\");\n" +
+                        "    }\n" +
+                        "    \n" +
+                        "    public String render(String inheritedContent) {\n" +
+                        "        String newLine = System.getProperty(\"line.separator\");\n" +
+                        "        StringBuilder view = new StringBuilder();\n" +
+                        "        \n" +
+                        "        return super.render(view.toString());\n" +
+                        "    }\n" +
+                        "}",
                 classCode);
     }
 
@@ -159,5 +193,38 @@ public class TestTemplateEngineParser {
         Assert.fail("Expected exception wasn't thrown.");
 //        System.out.print(classCode);
 
+    }
+
+    @Test
+    public void testSimpleHtmlTemplate() throws TemplateEngineParseException {
+        CharBuffer buffer = CharBuffer.wrap(
+                "<div class=\"test\">\n" +
+                "    <p>Test!</p>\n" +
+                "</div>");
+        TemplateParser parser = new TemplateParser(buffer, "org.test", "TestClassName");
+
+        String classCode = parser.parse();
+//        System.out.print(classCode);
+        Assert.assertEquals(
+                "package org.test;\n" +
+                        "\n" +
+                        "import org.featherj.View;\n" +
+                        "\n" +
+                        "public class TestClassName implements View {\n" +
+                        "    \n" +
+                        "    public String render() {\n" +
+                        "        return render(\"\");\n" +
+                        "    }\n" +
+                        "    \n" +
+                        "    public String render(String inheritedContent) {\n" +
+                        "        String newLine = System.getProperty(\"line.separator\");\n" +
+                        "        StringBuilder view = new StringBuilder();\n" +
+                        "        view.append(\"<div class=\\\"test\\\">\"); view.append(newLine);\n" +
+                        "        view.append(\"    <p>Test!\");view.append(\"</p>\"); view.append(newLine);\n" +
+                        "        view.append(\"</div>\");\n" +
+                        "        return view.toString();\n" +
+                        "    }\n" +
+                        "}",
+                classCode);
     }
 }

@@ -7,6 +7,7 @@ import org.featherj.routes.Route;
 import org.featherj.routes.Router;
 import org.featherj.routes.UrlParseException;
 import org.featherj.routes.params.IntRouteParam;
+import org.featherj.routes.params.StringRouteParam;
 import org.junit.Test;
 
 public class TestRoutes {
@@ -151,5 +152,33 @@ public class TestRoutes {
         Assert.assertTrue(route.matches(request1));
         Assert.assertTrue(route.matches(request2));
         Assert.assertFalse(route.matches(request3));
+    }
+
+    @Test
+    public void testStringRouteParam() throws UrlParseException {
+        Route r = Router.route(null, "/search/:query", new StringRouteParam(":query"));
+
+        Request request = new RequestImpl(null) {
+            @Override
+            public String getUrl() {
+                return "/search/test,%20.net,%20windows%20phone,%20play!";
+            }
+        };
+
+        Assert.assertTrue(r.matches(request));
+    }
+
+    @Test
+    public void testStringRouteParamAsPart() throws UrlParseException {
+        Route r = Router.route(null, "/search/:query/remainder-fixed-part/", new StringRouteParam(":query"));
+
+        Request request = new RequestImpl(null) {
+            @Override
+            public String getUrl() {
+                return "/search/test,%20.net,%20windows%20phone,%20play!/remainder-fixed-part/";
+            }
+        };
+
+        Assert.assertTrue(r.matches(request));
     }
 }

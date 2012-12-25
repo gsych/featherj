@@ -9,7 +9,7 @@ public class StringRouteParam extends RouteParam<String> {
     private String value;
 
     public StringRouteParam(String key) {
-        super(key, Pattern.compile("\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"));
+        super(key, Pattern.compile("[-a-zA-Z0-9+&@%=~_|!:,.;]+"));
     }
 
     @Override

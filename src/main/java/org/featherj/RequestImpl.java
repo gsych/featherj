@@ -24,7 +24,11 @@ public class RequestImpl implements Request {
     }
 
     public <T> T param(String name) {
-        return (T) params.get(name);
+        Object val = params.get(name);
+        if (val == null) {
+            throw new IllegalArgumentException(name);
+        }
+        return (T) val;
     }
 
     public void param(String name, Object value) {
